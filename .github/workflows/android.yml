@@ -12,6 +12,11 @@ concurrency:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '25']
+    name: build (JDK ${{ matrix.java }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -19,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v6
       - name: Unit tests, lint and debug APK
         run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --stacktrace
@@ -28,13 +33,13 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: think-twice-debug-apk
+          name: think-twice-debug-apk-jdk${{ matrix.java }}
           path: app/build/outputs/apk/debug/*.apk
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: reports
+          name: reports-jdk${{ matrix.java }}
           path: |
             app/build/reports/
             app/build/test-results/
