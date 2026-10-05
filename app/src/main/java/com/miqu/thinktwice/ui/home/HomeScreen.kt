@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -176,37 +177,37 @@ private fun DailyHero(card: ChallengeCard, onClick: () -> Unit) {
         onClick = onClick,
         shape = RoundedCornerShape(28.dp),
         color = Color(0xFFDDEBFF),
-        modifier = Modifier.fillMaxWidth().height(232.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        Box {
-            ArtImage(R.drawable.home_daily, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        // The card grows with its text (large font sizes, long titles) instead of clipping the button.
+        Box(Modifier.heightIn(min = 240.dp)) {
+            ArtImage(R.drawable.home_daily, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
             // Soft wash so text stays readable whatever the crop.
             Box(
-                Modifier.fillMaxSize().background(
-                    Brush.horizontalGradient(0f to Color.White.copy(alpha = 0.78f), 0.6f to Color.White.copy(alpha = 0f)),
+                Modifier.matchParentSize().background(
+                    Brush.horizontalGradient(0f to Color.White.copy(alpha = 0.8f), 0.62f to Color.White.copy(alpha = 0f)),
                 ),
             )
-            Column(
-                Modifier.fillMaxHeight().fillMaxWidth(0.6f).padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
+            Column(Modifier.fillMaxWidth(0.62f).padding(20.dp)) {
                 Overline("Daily challenge", color = ArtInkMuted)
+                Spacer(Modifier.height(6.dp))
                 Text(card.title, style = MaterialTheme.typography.headlineMedium, color = ArtInk)
+                Spacer(Modifier.height(6.dp))
                 Text(
                     when {
-                        card.completed -> "Done for today · back tomorrow"
-                        else -> "${card.answered}/${card.total} answered · +${card.bonus} XP bonus"
+                        card.completed -> "Done today · back tomorrow"
+                        else -> "${card.answered}/${card.total} · +${card.bonus} XP"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = ArtInkMuted,
                 )
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(18.dp))
                 SegmentedProgress(
                     colors = List(card.total) { i -> if (i < card.answered) MaterialTheme.colorScheme.primary else ArtInk.copy(alpha = 0.14f) },
                     gap = 3.dp,
                     height = 5.dp,
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(14.dp))
                 PillButton(
                     text = when {
                         card.completed -> "Play again"
