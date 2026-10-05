@@ -15,6 +15,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -88,7 +92,8 @@ private val tabs = listOf(
 )
 
 /** Space reserved at the bottom of tab screens so content clears the floating bar. */
-val BottomBarClearance = 104.dp
+val BottomBarClearance: Dp
+    @Composable get() = 104.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
 fun NavHostController.startQuiz(kind: QuizKind, categoryId: String? = null) {
     navigate(QuizRoute(kind.name, categoryId)) { launchSingleTop = true }

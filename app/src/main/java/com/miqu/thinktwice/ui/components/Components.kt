@@ -45,7 +45,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import android.util.LruCache
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -313,9 +320,29 @@ fun LinearMeter(
     }
 }
 
+/**
+ * Decoded artwork shared across screens. painterResource decodes a bitmap again every time an item
+ * enters composition (e.g. while scrolling a grid); caching keeps scrolling and tab switches smooth.
+ */
+private val artCache = object : LruCache<Int, ImageBitmap>(24 * 1024 * 1024) {
+    override fun sizeOf(key: Int, value: ImageBitmap): Int = value.asAndroidBitmap().byteCount
+}
+
+@Composable
+fun rememberArt(@DrawableRes res: Int): Painter {
+    val resources = LocalContext.current.resources
+    return remember(res) {
+        val bitmap = artCache.get(res) ?: ImageBitmap.imageResource(resources, res).also {
+            it.prepareToDraw()
+            artCache.put(res, it)
+        }
+        BitmapPainter(bitmap)
+    }
+}
+
 @Composable
 fun ArtImage(@DrawableRes res: Int, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Fit) {
-    Image(painterResource(res), contentDescription = null, modifier = modifier, contentScale = contentScale)
+    Image(rememberArt(res), contentDescription = null, modifier = modifier, contentScale = contentScale)
 }
 
 @DrawableRes

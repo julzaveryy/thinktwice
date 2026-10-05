@@ -83,6 +83,7 @@ import com.miqu.thinktwice.ui.components.PrimaryButton
 import com.miqu.thinktwice.ui.components.ScreenGutter
 import com.miqu.thinktwice.ui.components.SectionHeader
 import com.miqu.thinktwice.ui.components.badgeArt
+import com.miqu.thinktwice.ui.components.rememberArt
 import com.miqu.thinktwice.ui.navigation.BottomBarClearance
 import com.miqu.thinktwice.ui.theme.AppTheme
 import kotlinx.coroutines.flow.SharingStarted
@@ -226,7 +227,7 @@ private val grayscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSatur
 @Composable
 private fun BadgeImage(badge: Badge, modifier: Modifier = Modifier) {
     Image(
-        painterResource(badgeArt(badge.spec.id)),
+        rememberArt(badgeArt(badge.spec.id)),
         contentDescription = badge.spec.title + if (badge.unlocked) ", unlocked" else ", locked",
         colorFilter = if (badge.unlocked) null else grayscale,
         modifier = modifier.aspectRatio(1f).alpha(if (badge.unlocked) 1f else 0.45f),

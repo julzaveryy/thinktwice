@@ -126,7 +126,9 @@ class QuizViewModel(
             while (isActive) {
                 val remainingMs = deadline - SystemClock.elapsedRealtime()
                 val seconds = ((remainingMs + 999) / 1_000).toInt().coerceAtLeast(0)
-                _ui.update { it.copy(secondsLeft = seconds, timeUp = seconds == 0) }
+                if (_ui.value.secondsLeft != seconds) {
+                    _ui.update { it.copy(secondsLeft = seconds, timeUp = seconds == 0) }
+                }
                 if (seconds == 0) break
                 delay(250)
             }
