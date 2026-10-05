@@ -46,7 +46,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -106,7 +106,10 @@ fun AppNavHost(onboarded: Boolean) {
         ) {
             composable<OnboardingRoute> {
                 OnboardingScreen(onDone = {
-                    nav.navigate(HomeRoute) { popUpTo<OnboardingRoute> { inclusive = true } }
+                    nav.navigate(HomeRoute) {
+                        popUpTo<OnboardingRoute> { inclusive = true }
+                        launchSingleTop = true
+                    }
                 })
             }
             composable<HomeRoute> {
@@ -138,32 +141,34 @@ fun AppNavHost(onboarded: Boolean) {
                 exitTransition = { ExitTransition.None },
                 popExitTransition = { slideOutVertically { it / 6 } + fadeOut() },
                 popEnterTransition = { EnterTransition.None },
-            ) {
+            ) { entry ->
                 QuizScreen(
-                    onClose = { nav.popBackStack() },
+                    onClose = { nav.popIfCurrent(entry) },
                     onFinished = { attemptId ->
                         nav.navigate(ResultRoute(attemptId)) { popUpTo<QuizRoute> { inclusive = true } }
                     },
                 )
             }
-            composable<ResultRoute> {
+            composable<ResultRoute> { entry ->
                 ResultScreen(
-                    onDone = { nav.popBackStack() },
+                    onDone = { nav.popIfCurrent(entry) },
                     onPlayAgain = { kind, category ->
-                        nav.navigate(QuizRoute(kind.name, category)) { popUpTo<ResultRoute> { inclusive = true } }
+                        if (nav.currentBackStackEntry?.id == entry.id) {
+                            nav.navigate(QuizRoute(kind.name, category)) { popUpTo<ResultRoute> { inclusive = true } }
+                        }
                     },
                 )
             }
-            composable<SettingsRoute> {
+            composable<SettingsRoute> { entry ->
                 SettingsScreen(
-                    onBack = { nav.popBackStack() },
+                    onBack = { nav.popIfCurrent(entry) },
                     onEditProfile = { nav.navigate(EditProfileRoute) },
                     onEditTopics = { nav.navigate(TopicsRoute) },
                 )
             }
-            composable<EditProfileRoute> { EditProfileScreen(onBack = { nav.popBackStack() }) }
-            composable<TopicsRoute> { TopicsScreen(onBack = { nav.popBackStack() }) }
-            composable<BadgesRoute> { BadgesScreen(onBack = { nav.popBackStack() }) }
+            composable<EditProfileRoute> { entry -> EditProfileScreen(onBack = { nav.popIfCurrent(entry) }) }
+            composable<TopicsRoute> { entry -> TopicsScreen(onBack = { nav.popIfCurrent(entry) }) }
+            composable<BadgesRoute> { entry -> BadgesScreen(onBack = { nav.popIfCurrent(entry) }) }
         }
 
         AnimatedVisibility(
@@ -177,9 +182,15 @@ fun AppNavHost(onboarded: Boolean) {
     }
 }
 
+/** Pops [entry] only if it is still on top, so a double tap on Close/Back can't pop the screen below. */
+private fun NavHostController.popIfCurrent(entry: NavBackStackEntry) {
+    if (currentBackStackEntry?.id == entry.id) popBackStack()
+}
+
+/** Home is always the root under the tabs, even when the graph started on onboarding. */
 private fun NavHostController.switchTab(route: Any) {
     navigate(route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        popUpTo<HomeRoute> { saveState = true }
         launchSingleTop = true
         restoreState = true
     }

@@ -26,7 +26,7 @@ class AppContainer(context: Context) {
     val content = ContentRepository(context)
     val settings = SettingsStore(context)
     val progress = ProgressRepository(database.progressDao(), clock)
-    val legacyImporter = LegacyImporter(context, database.progressDao(), settings)
+    val legacyImporter = LegacyImporter(context, database, settings)
 }
 
 val Context.appContainer: AppContainer

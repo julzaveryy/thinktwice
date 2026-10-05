@@ -261,10 +261,11 @@ fun TopicsScreen(onBack: () -> Unit) {
     val vm = appViewModel { c, _ -> TopicsViewModel(c) }
     val loaded by vm.state.collectAsStateWithLifecycle()
     val (categories, favorites) = loaded ?: return
-    var selected by remember(favorites) { mutableStateOf(favorites) }
+    var picks by rememberSaveable(favorites) { mutableStateOf(favorites.toList()) }
+    val selected = picks.toSet()
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
         DetailTopBar("Favorite topics", onBack)
-        TopicPicker(categories, selected, onToggle = { id -> selected = if (id in selected) selected - id else selected + id }, modifier = Modifier.weight(1f))
+        TopicPicker(categories, selected, onToggle = { id -> picks = if (id in picks) picks - id else picks + id }, modifier = Modifier.weight(1f))
         Box(Modifier.padding(horizontal = ScreenGutter, vertical = 16.dp)) {
             PrimaryButton(if (selected.isEmpty()) "Use all topics" else "Save ${selected.size} topics", onClick = { vm.save(selected, onBack) })
         }

@@ -96,7 +96,7 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
     // Remember which question already gave feedback so rotation doesn't replay it.
     var feedbackGiven by rememberSaveable { mutableStateOf(-1) }
     LaunchedEffect(ui.checked, ui.index) {
-        if (!ui.checked || ui.loading || feedbackGiven == ui.index) return@LaunchedEffect
+        if (!ui.checked || ui.loading || feedbackGiven == ui.index || ui.silentIndex == ui.index) return@LaunchedEffect
         feedbackGiven = ui.index
         val (sound, haptic) = feedback
         if (haptic) haptics.performHapticFeedback(if (ui.lastAnswerCorrect) HapticFeedbackType.TextHandleMove else HapticFeedbackType.LongPress)

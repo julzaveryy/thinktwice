@@ -39,6 +39,7 @@ data class QuizUi(
     val timeUp: Boolean = false,
     val finishedAttemptId: Long? = null,
     val closed: Boolean = false,
+    val silentIndex: Int = -1,
 ) {
     val questions: List<Question> get() = plan?.questions.orEmpty()
     val question: Question? get() = questions.getOrNull(index)
@@ -84,8 +85,10 @@ class QuizViewModel(
         }.also { saved[KEY_SEED] = it }
 
         val plan = when (kind) {
-            QuizKind.DAILY -> QuizPlans.daily(content, today)
-            QuizKind.WEEKLY -> QuizPlans.weekly(content, weekKey(today))
+            // Seed holds the day / week the round started on, so a round restored after midnight
+            // keeps its own questions instead of mixing answers into the new day's set.
+            QuizKind.DAILY -> QuizPlans.daily(content, seed)
+            QuizKind.WEEKLY -> QuizPlans.weekly(content, seed)
             QuizKind.CATEGORY -> QuizPlans.category(content, route.categoryId.orEmpty(), container.progress.answeredQuestionIds(), seed)
             QuizKind.QUICK_MIX -> QuizPlans.quickMix(content, container.settings.current().favorites, container.progress.answeredQuestionIds(), seed)
             QuizKind.TIME_ATTACK -> QuizPlans.timeAttack(content, seed)
@@ -108,8 +111,10 @@ class QuizViewModel(
             seed = seed,
             index = index.coerceAtMost(plan.questions.lastIndex),
             selections = restored,
-            picked = saved.get<Int>(KEY_PICKED)?.takeIf { it >= 0 },
+            picked = if (restoredChecked) restored.lastOrNull() else saved.get<Int>(KEY_PICKED)?.takeIf { it >= 0 },
             checked = restoredChecked,
+            // Don't replay sound/haptics for an answer revealed before the screen was recreated.
+            silentIndex = if (restoredChecked) index else -1,
         )
         plan.timeLimitSeconds?.let { startTimer(it) }
     }

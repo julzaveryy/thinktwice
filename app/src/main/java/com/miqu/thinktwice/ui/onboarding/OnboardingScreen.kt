@@ -62,7 +62,11 @@ class OnboardingViewModel(private val container: AppContainer) : ViewModel() {
     val categories: StateFlow<List<Category>> = container.contentFlow().map { it.categories }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    private var finishing = false
+
     fun finish(profile: Profile, favorites: Set<String>, then: () -> Unit) {
+        if (finishing) return
+        finishing = true
         viewModelScope.launch {
             container.settings.completeOnboarding(profile, favorites)
             then()
