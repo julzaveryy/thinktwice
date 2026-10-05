@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon: same two-sparkle mark as the monochrome launcher layer, cropped to its bounds. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+    <group android:translateX="-14" android:translateY="-14">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M43,18 C46,35 52,41 69,44 C52,47 46,53 43,70 C40,53 34,47 17,44 C34,41 40,35 43,18 Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M73,35 C75,46 79,50 90,52 C79,54 75,58 73,69 C71,58 67,54 56,52 C67,50 71,46 73,35 Z" />
+    </group>
+</vector>

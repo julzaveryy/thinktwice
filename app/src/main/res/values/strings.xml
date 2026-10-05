@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Think Twice</string>
+    <string name="reminder_channel_name">Daily reminder</string>
+    <string name="reminder_channel_description">A gentle nudge when you haven\'t played today.</string>
+    <string name="reminder_title">Your daily quiz is waiting</string>
+    <string name="reminder_body">Keep your streak alive. Today\'s Landmark Hunt takes about two minutes.</string>
+</resources>
