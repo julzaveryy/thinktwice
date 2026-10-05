@@ -93,8 +93,11 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
     val haptics = LocalHapticFeedback.current
     val tone = remember { runCatching { ToneGenerator(AudioManager.STREAM_MUSIC, 55) }.getOrNull() }
     DisposableEffect(Unit) { onDispose { tone?.release() } }
+    // Remember which question already gave feedback so rotation doesn't replay it.
+    var feedbackGiven by rememberSaveable { mutableStateOf(-1) }
     LaunchedEffect(ui.checked, ui.index) {
-        if (!ui.checked || ui.loading) return@LaunchedEffect
+        if (!ui.checked || ui.loading || feedbackGiven == ui.index) return@LaunchedEffect
+        feedbackGiven = ui.index
         val (sound, haptic) = feedback
         if (haptic) haptics.performHapticFeedback(if (ui.lastAnswerCorrect) HapticFeedbackType.TextHandleMove else HapticFeedbackType.LongPress)
         if (sound) tone?.startTone(if (ui.lastAnswerCorrect) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_NACK, 120)
