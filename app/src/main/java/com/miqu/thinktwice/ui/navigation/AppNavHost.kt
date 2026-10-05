@@ -1,12 +1,17 @@
 package com.miqu.thinktwice.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -99,12 +105,26 @@ fun AppNavHost(onboarded: Boolean) {
         NavHost(
             navController = nav,
             startDestination = if (onboarded) HomeRoute else OnboardingRoute,
-            enterTransition = { fadeIn() },
-            exitTransition = { fadeOut() },
-            popEnterTransition = { fadeIn() },
-            popExitTransition = { fadeOut() },
+            // Tabs fade through (old fades out before the new fades in, so text never overlaps);
+            // everything else slides. The quiz rises over the screen below, which stays put.
+            enterTransition = { if (betweenTabs()) fadeThroughIn() else slideInHorizontally(tween(300)) { it } },
+            exitTransition = {
+                when {
+                    betweenTabs() -> fadeThroughOut()
+                    targetState.destination.hasRoute<QuizRoute>() -> ExitTransition.KeepUntilTransitionsFinished
+                    else -> slideOutHorizontally(tween(300)) { -it / 4 }
+                }
+            },
+            popEnterTransition = {
+                when {
+                    betweenTabs() -> fadeThroughIn()
+                    initialState.destination.hasRoute<QuizRoute>() -> EnterTransition.None
+                    else -> slideInHorizontally(tween(300)) { -it / 4 }
+                }
+            },
+            popExitTransition = { if (betweenTabs()) fadeThroughOut() else slideOutHorizontally(tween(300)) { it } },
         ) {
-            composable<OnboardingRoute> {
+            screen<OnboardingRoute> {
                 OnboardingScreen(onDone = {
                     nav.navigate(HomeRoute) {
                         popUpTo<OnboardingRoute> { inclusive = true }
@@ -112,35 +132,33 @@ fun AppNavHost(onboarded: Boolean) {
                     }
                 })
             }
-            composable<HomeRoute> {
+            screen<HomeRoute> {
                 HomeScreen(
                     onStartQuiz = { kind, category -> nav.startQuiz(kind, category) },
                     onOpenLibrary = { nav.switchTab(LibraryRoute) },
                     onOpenProfile = { nav.switchTab(ProfileRoute) },
                 )
             }
-            composable<LibraryRoute> {
+            screen<LibraryRoute> {
                 LibraryScreen(onStartTopic = { nav.startQuiz(QuizKind.CATEGORY, it) })
             }
-            composable<ActivityRoute> {
+            screen<ActivityRoute> {
                 ActivityScreen(
                     onOpenAttempt = { nav.navigate(ResultRoute(it)) },
                     onPractice = { nav.startQuiz(QuizKind.PRACTICE) },
                     onStartDaily = { nav.startQuiz(QuizKind.DAILY) },
                 )
             }
-            composable<ProfileRoute> {
+            screen<ProfileRoute> {
                 ProfileScreen(
                     onEdit = { nav.navigate(EditProfileRoute) },
                     onSettings = { nav.navigate(SettingsRoute) },
                     onBadges = { nav.navigate(BadgesRoute) },
                 )
             }
-            composable<QuizRoute>(
-                enterTransition = { slideInVertically { it / 6 } + fadeIn() },
-                exitTransition = { ExitTransition.None },
-                popExitTransition = { slideOutVertically { it / 6 } + fadeOut() },
-                popEnterTransition = { EnterTransition.None },
+            screen<QuizRoute>(
+                enter = { slideInVertically(tween(320)) { it } },
+                popExit = { slideOutVertically(tween(280)) { it } },
             ) { entry ->
                 QuizScreen(
                     onClose = { nav.popIfCurrent(entry) },
@@ -149,7 +167,7 @@ fun AppNavHost(onboarded: Boolean) {
                     },
                 )
             }
-            composable<ResultRoute> { entry ->
+            screen<ResultRoute> { entry ->
                 ResultScreen(
                     onDone = { nav.popIfCurrent(entry) },
                     onPlayAgain = { kind, category ->
@@ -159,16 +177,16 @@ fun AppNavHost(onboarded: Boolean) {
                     },
                 )
             }
-            composable<SettingsRoute> { entry ->
+            screen<SettingsRoute> { entry ->
                 SettingsScreen(
                     onBack = { nav.popIfCurrent(entry) },
                     onEditProfile = { nav.navigate(EditProfileRoute) },
                     onEditTopics = { nav.navigate(TopicsRoute) },
                 )
             }
-            composable<EditProfileRoute> { entry -> EditProfileScreen(onBack = { nav.popIfCurrent(entry) }) }
-            composable<TopicsRoute> { entry -> TopicsScreen(onBack = { nav.popIfCurrent(entry) }) }
-            composable<BadgesRoute> { entry -> BadgesScreen(onBack = { nav.popIfCurrent(entry) }) }
+            screen<EditProfileRoute> { entry -> EditProfileScreen(onBack = { nav.popIfCurrent(entry) }) }
+            screen<TopicsRoute> { entry -> TopicsScreen(onBack = { nav.popIfCurrent(entry) }) }
+            screen<BadgesRoute> { entry -> BadgesScreen(onBack = { nav.popIfCurrent(entry) }) }
         }
 
         AnimatedVisibility(
@@ -179,6 +197,26 @@ fun AppNavHost(onboarded: Boolean) {
         ) {
             FloatingTabBar(destination = destination, onSelect = { nav.switchTab(it) })
         }
+    }
+}
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.betweenTabs(): Boolean =
+    tabs.any { it.matches(initialState.destination) } && tabs.any { it.matches(targetState.destination) }
+
+private fun fadeThroughIn(): EnterTransition = fadeIn(tween(durationMillis = 210, delayMillis = 90))
+private fun fadeThroughOut(): ExitTransition = fadeOut(tween(durationMillis = 90))
+
+/**
+ * A destination drawn on an opaque background, so a screen sliding over another
+ * (including during the predictive back gesture) never shows text through it.
+ */
+private inline fun <reified T : Any> NavGraphBuilder.screen(
+    noinline enter: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition)? = null,
+    noinline popExit: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition)? = null,
+    crossinline content: @Composable (NavBackStackEntry) -> Unit,
+) {
+    composable<T>(enterTransition = enter, popExitTransition = popExit) { entry ->
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) { content(entry) }
     }
 }
 
@@ -207,6 +245,7 @@ private fun FloatingTabBar(destination: NavDestination?, onSelect: (Any) -> Unit
             .height(66.dp),
         shape = CircleShape,
         color = extra.navBar,
+        border = if (extra.isDark) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 12.dp,
     ) {
         Row(
@@ -229,7 +268,7 @@ private fun FloatingTabBar(destination: NavDestination?, onSelect: (Any) -> Unit
                     Icon(
                         if (selected) tab.selectedIcon else tab.icon,
                         contentDescription = if (selected) null else tab.label,
-                        tint = if (selected) Color.White else Color.White.copy(alpha = 0.72f),
+                        tint = if (selected) Color.White else extra.navContent,
                         modifier = Modifier.size(22.dp),
                     )
                     if (selected) {

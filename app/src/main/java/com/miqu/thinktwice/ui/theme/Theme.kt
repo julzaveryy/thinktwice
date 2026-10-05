@@ -29,6 +29,7 @@ data class ExtraColors(
     val segmentTrack: Color,
     val segmentThumb: Color,
     val navBar: Color,
+    val navContent: Color,
     val link: Color,
     val isDark: Boolean,
 )
@@ -89,7 +90,8 @@ private val LightExtra = ExtraColors(
     dangerContainer = Color(0xFFFBE7E3),
     segmentTrack = Color(0xFFDDE5F7),
     segmentThumb = Color.White,
-    navBar = Color(0xFF151A26),
+    navBar = Color.White,
+    navContent = Color(0xFF596070),
     link = Color(0xFF2350E0),
     isDark = false,
 )
@@ -109,6 +111,7 @@ private val DarkExtra = ExtraColors(
     segmentTrack = Color(0xFF161B22),
     segmentThumb = Color(0xFF353F52),
     navBar = Color(0xFF1E2430),
+    navContent = Color(0xFFB8C1CC),
     link = Color(0xFF7AA7FF),
     isDark = true,
 )
