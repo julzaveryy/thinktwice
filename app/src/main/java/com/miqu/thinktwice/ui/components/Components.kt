@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.components
 
+import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -256,9 +257,10 @@ fun AvatarBubble(emoji: String, modifier: Modifier = Modifier, size: Dp = 48.dp)
 @Composable
 fun StreakChip(days: Int, modifier: Modifier = Modifier) {
     val extra = AppTheme.extra
+    val streakLabel = stringResource(R.string.streak_cd, days)
     Surface(
         modifier = modifier.semantics(mergeDescendants = true) {
-            contentDescription = "$days day streak"
+            contentDescription = streakLabel
         },
         shape = CircleShape,
         color = if (days > 0) extra.amberContainer else MaterialTheme.colorScheme.surface,
@@ -276,7 +278,7 @@ fun StreakChip(days: Int, modifier: Modifier = Modifier) {
                 modifier = Modifier.size(18.dp),
             )
             Text(
-                if (days == 1) "1 day" else "$days days",
+                if (days == 1) stringResource(R.string.streak_one_day) else stringResource(R.string.streak_days, days),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (days > 0) extra.onAmberContainer else MaterialTheme.colorScheme.onSurfaceVariant,
             )

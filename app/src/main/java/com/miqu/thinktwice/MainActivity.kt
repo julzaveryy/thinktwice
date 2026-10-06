@@ -1,5 +1,6 @@
 package com.miqu.thinktwice
 
+import com.miqu.thinktwice.ui.common.ProvideAppLanguage
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -32,7 +33,7 @@ class MainActivity : ComponentActivity() {
         val container = appContainer
 
         lifecycleScope.launch {
-            container.legacyImporter.importIfNeeded(container.content.content())
+            container.legacyImporter.importIfNeeded(container.content.content("en"))
             ready.value = true
         }
         splash.setKeepOnScreenCondition { !ready.value }
@@ -68,7 +69,9 @@ class MainActivity : ComponentActivity() {
                 if (isReady && current != null) {
                     // Decide the start destination once; later changes are handled by navigation.
                     val onboarded = remember { current.onboarded }
-                    AppNavHost(onboarded = onboarded)
+                    ProvideAppLanguage(current.language.resolve()) {
+                        AppNavHost(onboarded = onboarded)
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.home
 
+import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -93,7 +94,7 @@ fun HomeScreen(
                 }
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    "Hi, ${state.profile.displayName}",
+                    stringResource(R.string.greeting, state.profile.displayName),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f),
@@ -105,9 +106,9 @@ fun HomeScreen(
         }
         item(key = "headline") {
             val headline = when {
-                state.daily?.inProgress == true -> "Let’s continue\na quiz!"
-                !state.hasPlayed -> "Ready for your\nfirst quiz?"
-                else -> "Ready for\nanother quiz?"
+                state.daily?.inProgress == true -> stringResource(R.string.headline_continue)
+                !state.hasPlayed -> stringResource(R.string.headline_first)
+                else -> stringResource(R.string.headline_again)
             }
             Text(
                 headline,
@@ -124,46 +125,46 @@ fun HomeScreen(
                 FeatureTile(
                     modifier = Modifier.weight(1f),
                     art = R.drawable.home_quick_mix,
-                    title = "Quick Mix",
-                    status = "10 questions · your topics",
-                    action = "Start mix",
+                    title = stringResource(R.string.title_quick_mix),
+                    status = stringResource(R.string.quick_mix_status),
+                    action = stringResource(R.string.start_mix),
                     onClick = { onStartQuiz(QuizKind.QUICK_MIX, null) },
                 )
                 val weekly = state.weekly
                 FeatureTile(
                     modifier = Modifier.weight(1f),
                     art = R.drawable.home_weekly,
-                    title = "Weekly Spotlight",
+                    title = stringResource(R.string.title_weekly),
                     status = when {
                         weekly == null -> ""
-                        weekly.completed -> "✓ Reward collected"
-                        else -> "${weekly.answered} of ${weekly.total} · +${weekly.bonus} XP"
+                        weekly.completed -> stringResource(R.string.weekly_collected)
+                        else -> stringResource(R.string.weekly_progress, weekly.answered, weekly.total, weekly.bonus)
                     },
                     action = when {
-                        weekly?.completed == true -> "Replay"
-                        weekly?.inProgress == true -> "Continue"
-                        else -> "Explore"
+                        weekly?.completed == true -> stringResource(R.string.replay)
+                        weekly?.inProgress == true -> stringResource(R.string.continue_)
+                        else -> stringResource(R.string.explore)
                     },
                     onClick = { onStartQuiz(QuizKind.WEEKLY, null) },
                 )
             }
         }
-        item(key = "modes-title") { SectionHeader("Game modes", Modifier.padding(top = 8.dp)) }
+        item(key = "modes-title") { SectionHeader(stringResource(R.string.game_modes), Modifier.padding(top = 8.dp)) }
         item(key = "modes") {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ModeCard(Modifier.weight(1f), Icons.Rounded.Timer, "Time Attack", "90 seconds", Tint.SKY) {
+                ModeCard(Modifier.weight(1f), Icons.Rounded.Timer, stringResource(R.string.title_time_attack), stringResource(R.string.seconds_90), Tint.SKY) {
                     onStartQuiz(QuizKind.TIME_ATTACK, null)
                 }
-                ModeCard(Modifier.weight(1f), Icons.Rounded.Favorite, "Survival", "3 lives", Tint.PEACH) {
+                ModeCard(Modifier.weight(1f), Icons.Rounded.Favorite, stringResource(R.string.title_survival), stringResource(R.string.lives_3), Tint.PEACH) {
                     onStartQuiz(QuizKind.SURVIVAL, null)
                 }
-                ModeCard(Modifier.weight(1f), Icons.Rounded.AllInclusive, "Endless", "No limit", Tint.MINT) {
+                ModeCard(Modifier.weight(1f), Icons.Rounded.AllInclusive, stringResource(R.string.title_endless), stringResource(R.string.no_limit), Tint.MINT) {
                     onStartQuiz(QuizKind.ENDLESS, null)
                 }
             }
         }
         item(key = "foryou-title") {
-            SectionHeader("For you", Modifier.padding(top = 8.dp), action = "See all", onAction = onOpenLibrary)
+            SectionHeader(stringResource(R.string.for_you), Modifier.padding(top = 8.dp), action = stringResource(R.string.see_all), onAction = onOpenLibrary)
         }
         items(state.forYou, key = { "topic_${it.id}" }) { topic ->
             TopicRow(topic, onClick = { onStartQuiz(QuizKind.CATEGORY, topic.id) })
@@ -189,14 +190,14 @@ private fun DailyHero(card: ChallengeCard, onClick: () -> Unit) {
                 ),
             )
             Column(Modifier.fillMaxWidth(0.62f).padding(20.dp)) {
-                Overline("Daily challenge", color = ArtInkMuted)
+                Overline(stringResource(R.string.daily_challenge), color = ArtInkMuted)
                 Spacer(Modifier.height(6.dp))
-                Text(card.title, style = MaterialTheme.typography.headlineMedium, color = ArtInk)
+                Text(stringResource(R.string.title_daily), style = MaterialTheme.typography.headlineMedium, color = ArtInk)
                 Spacer(Modifier.height(6.dp))
                 Text(
                     when {
-                        card.completed -> "Done today · back tomorrow"
-                        else -> "${card.answered}/${card.total} · +${card.bonus} XP"
+                        card.completed -> stringResource(R.string.daily_done)
+                        else -> stringResource(R.string.daily_progress, card.answered, card.total, card.bonus)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = ArtInkMuted,
@@ -210,9 +211,9 @@ private fun DailyHero(card: ChallengeCard, onClick: () -> Unit) {
                 Spacer(Modifier.height(14.dp))
                 PillButton(
                     text = when {
-                        card.completed -> "Play again"
-                        card.inProgress -> "Continue"
-                        else -> "Start quiz"
+                        card.completed -> stringResource(R.string.play_again)
+                        card.inProgress -> stringResource(R.string.continue_)
+                        else -> stringResource(R.string.start_quiz)
                     },
                     onClick = onClick,
                     containerColor = ArtInk,
@@ -276,10 +277,8 @@ fun TopicRow(topic: TopicCard, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(topic.title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                 Text(
-                    buildString {
-                        append("${topic.questionCount} questions")
-                        topic.accuracy?.let { append(" · $it% correct") }
-                    },
+                    topic.accuracy?.let { stringResource(R.string.topic_accuracy, topic.questionCount, it) }
+                        ?: stringResource(R.string.questions_count, topic.questionCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -291,7 +290,7 @@ fun TopicRow(topic: TopicCard, onClick: () -> Unit) {
                 modifier = Modifier.size(40.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Rounded.PlayArrow, contentDescription = "Play ${topic.title}", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.play_topic, topic.title), tint = MaterialTheme.colorScheme.primary)
                 }
             }
         }

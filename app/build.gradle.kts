@@ -26,8 +26,8 @@ android {
         applicationId = "com.miqu.thinktwice"
         minSdk = 24
         targetSdk = 36
-        versionCode = 100
-        versionName = "2.0.0"
+        versionCode = 110
+        versionName = "2.1.0"
     }
 
     signingConfigs {

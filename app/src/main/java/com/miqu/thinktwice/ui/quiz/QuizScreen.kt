@@ -1,5 +1,9 @@
 package com.miqu.thinktwice.ui.quiz
 
+import com.miqu.thinktwice.ui.common.quizTitle
+import com.miqu.thinktwice.ui.common.labelRes
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import android.media.AudioManager
 import android.media.ToneGenerator
 import androidx.activity.compose.BackHandler
@@ -125,23 +129,24 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
             Modifier.fillMaxWidth().padding(horizontal = ScreenGutter, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CircleIconButton(Icons.Rounded.Close, "Exit quiz", onClick = { if (wantsConfirm) confirmExit = true else onClose() })
+            CircleIconButton(Icons.Rounded.Close, stringResource(R.string.exit_quiz), onClick = { if (wantsConfirm) confirmExit = true else onClose() })
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(plan.title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(if (plan.kind == QuizKind.CATEGORY) plan.title else quizTitle(plan.kind, null), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    if (plan.isOpenEnded) "Question ${ui.index + 1}" else "Question ${ui.index + 1} of ${ui.questions.size}",
+                    if (plan.isOpenEnded) stringResource(R.string.question_n, ui.index + 1)
+                    else stringResource(R.string.question_n_of, ui.index + 1, ui.questions.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             if (plan.isOpenEnded) {
                 TextButton(onClick = vm::finish, enabled = ui.selections.isNotEmpty(), modifier = Modifier.heightIn(min = 44.dp)) {
-                    Text("End", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.end), style = MaterialTheme.typography.titleSmall)
                 }
             } else {
                 TextButton(onClick = vm::skip, enabled = !ui.checked, modifier = Modifier.heightIn(min = 44.dp)) {
-                    Text("Skip", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.skip), style = MaterialTheme.typography.titleSmall)
                 }
             }
         }
@@ -192,17 +197,17 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
         Box(Modifier.padding(horizontal = ScreenGutter, vertical = 16.dp)) {
             val extra = AppTheme.extra
             when {
-                ui.timeUp -> PrimaryButton("Time’s up · See results", onClick = vm::finish)
-                ui.checked && ui.isOver -> PrimaryButton("See results", onClick = vm::next, trailingIcon = Icons.AutoMirrored.Rounded.ArrowForward)
+                ui.timeUp -> PrimaryButton(stringResource(R.string.times_up), onClick = vm::finish)
+                ui.checked && ui.isOver -> PrimaryButton(stringResource(R.string.see_results), onClick = vm::next, trailingIcon = Icons.AutoMirrored.Rounded.ArrowForward)
                 ui.checked -> PrimaryButton(
-                    "Next question",
+                    stringResource(R.string.next_question),
                     onClick = vm::next,
                     containerColor = extra.featureCard,
                     contentColor = extra.onFeatureCard,
                     trailingIcon = Icons.AutoMirrored.Rounded.ArrowForward,
                 )
-                ui.picked != null -> PrimaryButton("Check answer", onClick = vm::check)
-                else -> PrimaryButton("Pick an answer", onClick = {}, enabled = false)
+                ui.picked != null -> PrimaryButton(stringResource(R.string.check_answer), onClick = vm::check)
+                else -> PrimaryButton(stringResource(R.string.pick_answer), onClick = {}, enabled = false)
             }
         }
     }
@@ -210,25 +215,25 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
     if (confirmExit) {
         AlertDialog(
             onDismissRequest = { confirmExit = false },
-            title = { Text("Leave this quiz?") },
+            title = { Text(stringResource(R.string.leave_title)) },
             text = {
                 Text(
-                    if (plan.isOpenEnded) "End now to save your score, or leave without saving."
-                    else "Answers from this round won’t be saved.",
+                    if (plan.isOpenEnded) stringResource(R.string.leave_open)
+                    else stringResource(R.string.leave_round),
                 )
             },
             confirmButton = {
                 if (plan.isOpenEnded) {
-                    TextButton(onClick = { confirmExit = false; vm.finish() }) { Text("End & save") }
+                    TextButton(onClick = { confirmExit = false; vm.finish() }) { Text(stringResource(R.string.end_save)) }
                 } else {
-                    TextButton(onClick = { confirmExit = false; onClose() }) { Text("Leave") }
+                    TextButton(onClick = { confirmExit = false; onClose() }) { Text(stringResource(R.string.leave)) }
                 }
             },
             dismissButton = {
                 if (plan.isOpenEnded) {
-                    TextButton(onClick = { confirmExit = false; onClose() }) { Text("Leave") }
+                    TextButton(onClick = { confirmExit = false; onClose() }) { Text(stringResource(R.string.leave)) }
                 } else {
-                    TextButton(onClick = { confirmExit = false }) { Text("Keep playing") }
+                    TextButton(onClick = { confirmExit = false }) { Text(stringResource(R.string.keep_playing)) }
                 }
             },
         )
@@ -242,13 +247,14 @@ private fun ModeStatus(ui: QuizUi) {
         ui.secondsLeft?.let { seconds ->
             val urgent = seconds <= 10
             StatusChip(
-                text = "${seconds}s",
+                text = stringResource(R.string.seconds_short, seconds),
                 container = if (urgent) extra.dangerContainer else MaterialTheme.colorScheme.surface,
                 content = if (urgent) extra.danger else MaterialTheme.colorScheme.onSurface,
             ) { Icon(Icons.Rounded.Timer, null, Modifier.size(16.dp)) }
         }
         ui.livesLeft?.let { lives ->
             val total = ui.plan?.lives ?: 0
+            val livesLabel = stringResource(R.string.lives_left, lives, total)
             Row(
                 Modifier.semantics(mergeDescendants = true) {}.padding(horizontal = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -256,7 +262,7 @@ private fun ModeStatus(ui: QuizUi) {
                 repeat(total) { i ->
                     Icon(
                         if (i < lives) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                        contentDescription = if (i == 0) "$lives of $total lives left" else null,
+                        contentDescription = if (i == 0) livesLabel else null,
                         tint = Color(0xFFE5484D),
                         modifier = Modifier.size(22.dp),
                     )
@@ -265,7 +271,7 @@ private fun ModeStatus(ui: QuizUi) {
         }
         Spacer(Modifier.weight(1f))
         StatusChip(
-            text = "${ui.correctCount} correct",
+            text = stringResource(R.string.n_correct, ui.correctCount),
             container = extra.successContainer,
             content = extra.success,
         ) { Icon(Icons.Rounded.Check, null, Modifier.size(16.dp)) }
@@ -303,10 +309,10 @@ private fun QuestionBody(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Chip(question.difficulty.label, MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurfaceVariant, border = true)
+            Chip(stringResource(question.difficulty.labelRes()), MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurfaceVariant, border = true)
             when {
-                practice -> Chip("PRACTICE · NO XP", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
-                awardsXp -> Chip("+${question.difficulty.xp} XP", extra.amberContainer, extra.onAmberContainer)
+                practice -> Chip(stringResource(R.string.practice_no_xp), MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+                awardsXp -> Chip(stringResource(R.string.plus_xp, question.difficulty.xp), extra.amberContainer, extra.onAmberContainer)
             }
         }
         Text(
@@ -339,17 +345,17 @@ private fun QuestionBody(
             ) {
                 Text(
                     when {
-                        correct && awardsXp -> "Nice one · +${question.difficulty.xp} XP"
-                        correct -> "Nice one · cleared from Mistakes"
-                        ui.picked == -1 -> "Skipped · saved to Mistakes"
-                        else -> "Not quite · saved to Mistakes"
+                        correct && awardsXp -> stringResource(R.string.fb_correct_xp, question.difficulty.xp)
+                        correct -> stringResource(R.string.fb_correct_cleared)
+                        ui.picked == -1 -> stringResource(R.string.fb_skipped)
+                        else -> stringResource(R.string.fb_wrong)
                     },
                     style = MaterialTheme.typography.titleSmall,
                     color = if (correct) extra.success else extra.danger,
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    question.explanation ?: "The correct answer is ${question.correctAnswer}.",
+                    question.explanation ?: stringResource(R.string.fb_fallback, question.correctAnswer),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -398,8 +404,8 @@ private fun AnswerOption(letter: String, text: String, state: AnswerState, onCli
             Spacer(Modifier.width(12.dp))
             Text(text, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, modifier = Modifier.weight(1f))
             when (state) {
-                AnswerState.Correct -> Text("Correct", style = MaterialTheme.typography.labelLarge, color = extra.success)
-                AnswerState.Wrong -> Text("Your answer", style = MaterialTheme.typography.labelLarge, color = extra.danger)
+                AnswerState.Correct -> Text(stringResource(R.string.correct), style = MaterialTheme.typography.labelLarge, color = extra.success)
+                AnswerState.Wrong -> Text(stringResource(R.string.your_answer), style = MaterialTheme.typography.labelLarge, color = extra.danger)
                 else -> Unit
             }
         }

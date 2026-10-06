@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.reminder
 
+import com.miqu.thinktwice.ui.common.withLanguage
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -58,8 +59,9 @@ object Reminders {
     }
 
     @SuppressLint("MissingPermission") // Checked by canNotify().
-    internal fun show(context: Context) {
-        if (!canNotify(context)) return
+    internal fun show(appContext: Context, language: String) {
+        if (!canNotify(appContext)) return
+        val context = appContext.withLanguage(language)
         val manager = context.getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager.createNotificationChannel(
@@ -94,7 +96,7 @@ class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWork
         val container = (applicationContext as ThinkTwiceApp).container
         val settings = container.settings.current()
         if (settings.reminders && !container.progress.playedToday()) {
-            Reminders.show(applicationContext)
+            Reminders.show(applicationContext, settings.language.resolve())
         }
         return Result.success()
     }

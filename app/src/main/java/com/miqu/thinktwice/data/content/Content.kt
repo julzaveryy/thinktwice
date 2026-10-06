@@ -98,15 +98,26 @@ internal fun parseContent(json: String): Content {
     )
 }
 
-/** Loads `assets/content.json` once, off the main thread. */
-class ContentRepository(private val context: Context) {
+/**
+ * Loads `assets/content.<lang>.json` ("en" or "id") once per language, off the main thread.
+ * Both files share ids, answer order and correct indices, so progress is language independent.
+ */
+class ContentRepository(
+    private val context: Context,
+    private val currentLanguage: suspend () -> String,
+) {
     private val mutex = Mutex()
-    @Volatile private var cached: Content? = null
+    private val cache = mutableMapOf<String, Content>()
 
-    suspend fun content(): Content = cached ?: mutex.withLock {
-        cached ?: withContext(Dispatchers.IO) {
-            val json = context.assets.open("content.json").bufferedReader().use { it.readText() }
-            parseContent(json)
-        }.also { cached = it }
+    /** Content in the app's current language. */
+    suspend fun content(): Content = content(currentLanguage())
+
+    suspend fun content(language: String): Content = mutex.withLock {
+        cache.getOrPut(language) {
+            withContext(Dispatchers.IO) {
+                val file = if (language == "id") "content.id.json" else "content.en.json"
+                parseContent(context.assets.open(file).bufferedReader().use { it.readText() })
+            }
+        }
     }
 }

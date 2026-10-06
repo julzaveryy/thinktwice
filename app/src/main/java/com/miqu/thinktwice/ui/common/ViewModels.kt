@@ -10,7 +10,8 @@ import com.miqu.thinktwice.AppContainer
 import com.miqu.thinktwice.appContainer
 import com.miqu.thinktwice.data.content.Content
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /** Creates a screen ViewModel with access to the app container and its SavedStateHandle. */
 @Composable
@@ -21,4 +22,6 @@ inline fun <reified VM : ViewModel> appViewModel(
     return viewModel { create(container, createSavedStateHandle()) }
 }
 
-fun AppContainer.contentFlow(): Flow<Content> = flow { emit(content.content()) }
+/** Quiz content that follows the language setting. */
+fun AppContainer.contentFlow(): Flow<Content> =
+    settings.settings.map { it.language.resolve() }.distinctUntilChanged().map { content.content(it) }

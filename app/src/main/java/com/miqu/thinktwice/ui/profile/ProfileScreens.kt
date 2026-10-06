@@ -1,5 +1,11 @@
 package com.miqu.thinktwice.ui.profile
 
+import com.miqu.thinktwice.ui.common.unitRes
+import com.miqu.thinktwice.ui.common.levelName
+import com.miqu.thinktwice.ui.common.badgeDescription
+import com.miqu.thinktwice.ui.common.badgeTitle
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -126,25 +132,25 @@ fun ProfileScreen(onEdit: () -> Unit, onSettings: () -> Unit, onBadges: () -> Un
                     Text(state.profile.displayName, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(state.profile.displayHandle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                PillButton("Edit", onEdit, containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface)
+                PillButton(stringResource(R.string.edit), onEdit, containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(8.dp))
-                CircleIconButton(Icons.Rounded.Settings, "Settings", onSettings)
+                CircleIconButton(Icons.Rounded.Settings, stringResource(R.string.settings), onSettings)
             }
         }
         item(key = "level") { LevelCard(stats.xp) }
         item(key = "stats") {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    StatCard("Quizzes", stats.quizzes.toString(), Modifier.weight(1f))
-                    StatCard("Accuracy", if (stats.answers == 0) "–" else "${stats.accuracy}%", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.stat_quizzes), stats.quizzes.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.stat_accuracy), if (stats.answers == 0) "–" else stringResource(R.string.percent, stats.accuracy), Modifier.weight(1f))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    StatCard("Answers", stats.answers.toString(), Modifier.weight(1f))
-                    StatCard("Streak", "${stats.streak.current}d", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.stat_answers), stats.answers.toString(), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.stat_streak), stringResource(R.string.days_short, stats.streak.current), Modifier.weight(1f))
                 }
                 if (stats.quizzes == 0) {
                     Text(
-                        "Play your first quiz to see your stats grow.",
+                        stringResource(R.string.stats_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -152,13 +158,13 @@ fun ProfileScreen(onEdit: () -> Unit, onSettings: () -> Unit, onBadges: () -> Un
             }
         }
         item(key = "badges-title") {
-            SectionHeader("Badges", action = "See all", onAction = onBadges)
+            SectionHeader(stringResource(R.string.badges), action = stringResource(R.string.see_all), onAction = onBadges)
         }
         item(key = "badges") {
             val unlocked = state.badges.count { it.unlocked }
             val next = state.badges.firstOrNull { !it.unlocked }
             AppCard(onClick = onBadges) {
-                Text("$unlocked of ${state.badges.size} unlocked", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.badges_unlocked, unlocked, state.badges.size), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     state.badges.sortedByDescending { it.unlocked }.take(4).forEach { badge ->
@@ -167,9 +173,9 @@ fun ProfileScreen(onEdit: () -> Unit, onSettings: () -> Unit, onBadges: () -> Un
                 }
                 if (next != null) {
                     Spacer(Modifier.height(14.dp))
-                    Overline("Next up")
+                    Overline(stringResource(R.string.next_up))
                     Spacer(Modifier.height(4.dp))
-                    Text("${next.spec.title} · ${next.spec.description}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(badgeTitle(next.spec) + " · " + badgeDescription(next.spec), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(8.dp))
                     LinearMeter(next.progress, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.surfaceVariant, height = 6.dp)
                 }
@@ -184,34 +190,37 @@ private fun LevelCard(xp: Int) {
     val level = levelFor(xp)
     Surface(shape = RoundedCornerShape(24.dp), color = extra.featureCard) {
         Column(Modifier.padding(20.dp)) {
-            Overline("Your level", color = extra.featureMuted)
+            Overline(stringResource(R.string.your_level), color = extra.featureMuted)
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.Bottom) {
-                Text("${level.level.name} level", style = MaterialTheme.typography.headlineMedium, color = extra.onFeatureCard, modifier = Modifier.weight(1f))
-                Text("$xp XP", style = MaterialTheme.typography.titleMedium, color = extra.amber)
+                Text(stringResource(R.string.level_name, levelName(level.level)), style = MaterialTheme.typography.headlineMedium, color = extra.onFeatureCard, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.xp_amount, xp), style = MaterialTheme.typography.titleMedium, color = extra.amber)
             }
             Spacer(Modifier.height(14.dp))
             LinearMeter(level.progress, extra.amber, extra.featureTrack)
             Spacer(Modifier.height(8.dp))
             Text(
-                level.next?.let { "${level.xpToNext} XP to ${it.name}" } ?: "Top level reached",
+                level.next?.let { stringResource(R.string.xp_to_next, level.xpToNext, levelName(it)) } ?: stringResource(R.string.top_level),
                 style = MaterialTheme.typography.bodySmall,
                 color = extra.featureMuted,
             )
             Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                LEVELS.forEachIndexed { i, l ->
+                LEVELS.forEachIndexed { i, tier ->
                     val reached = i <= level.index
+                    val tierName = levelName(tier)
                     Box(
                         Modifier
                             .weight(1f)
+                            .semantics { contentDescription = tierName }
                             .clip(CircleShape)
                             .background(if (reached) extra.amber.copy(alpha = 0.22f) else extra.featureTrack)
                             .padding(vertical = 6.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            l.name.take(3),
+                            // Tier number keeps the ladder readable in every language.
+                            "${i + 1}",
                             style = MaterialTheme.typography.labelSmall,
                             color = if (reached) extra.amber else extra.featureMuted,
                         )
@@ -228,7 +237,7 @@ private val grayscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSatur
 private fun BadgeImage(badge: Badge, modifier: Modifier = Modifier) {
     Image(
         rememberArt(badgeArt(badge.spec.id)),
-        contentDescription = badge.spec.title + if (badge.unlocked) ", unlocked" else ", locked",
+        contentDescription = stringResource(if (badge.unlocked) R.string.badge_unlocked_cd else R.string.badge_locked_cd, badgeTitle(badge.spec)),
         colorFilter = if (badge.unlocked) null else grayscale,
         modifier = modifier.aspectRatio(1f).alpha(if (badge.unlocked) 1f else 0.45f),
     )
@@ -245,7 +254,7 @@ fun BadgesScreen(onBack: () -> Unit) {
     val badges by vm.badges.collectAsStateWithLifecycle()
     val list = badges ?: return
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        DetailTopBar("Badges", onBack)
+        DetailTopBar(stringResource(R.string.badges), onBack)
         LazyVerticalGrid(
             columns = GridCells.Adaptive(150.dp),
             contentPadding = PaddingValues(start = ScreenGutter, end = ScreenGutter, top = 4.dp, bottom = 32.dp),
@@ -254,19 +263,20 @@ fun BadgesScreen(onBack: () -> Unit) {
             modifier = Modifier.navigationBarsPadding(),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Overline("${list.count { it.unlocked }} of ${list.size} unlocked")
+                Overline(stringResource(R.string.badges_unlocked, list.count { it.unlocked }, list.size))
             }
             items(list, key = { it.spec.id }) { badge ->
                 AppCard {
                     BadgeImage(badge, Modifier.fillMaxWidth().padding(horizontal = 16.dp))
                     Spacer(Modifier.height(10.dp))
-                    Text(badge.spec.title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
-                    Text(badge.spec.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, minLines = 2)
+                    Text(badgeTitle(badge.spec), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(badgeDescription(badge.spec), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, minLines = 2)
                     Spacer(Modifier.height(10.dp))
                     LinearMeter(badge.progress, if (badge.unlocked) AppTheme.extra.success else MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.surfaceVariant, height = 6.dp)
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        if (badge.unlocked) "Unlocked" else "${badge.current.coerceAtMost(badge.spec.target)} / ${badge.spec.target} ${badge.spec.metric.unit}",
+                        if (badge.unlocked) stringResource(R.string.unlocked)
+                        else stringResource(R.string.badge_progress, badge.current.coerceAtMost(badge.spec.target), badge.spec.target, stringResource(badge.spec.metric.unitRes())),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -282,7 +292,7 @@ fun DetailTopBar(title: String, onBack: () -> Unit) {
         Modifier.fillMaxWidth().padding(horizontal = ScreenGutter, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        CircleIconButton(Icons.AutoMirrored.Rounded.ArrowBack, "Back", onBack)
+        CircleIconButton(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.back), onBack)
         Spacer(Modifier.width(14.dp))
         Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
     }
@@ -319,10 +329,11 @@ fun ProfileForm(
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { AvatarBubble(avatar, size = 88.dp) }
-        Overline("Pick an avatar")
+        Overline(stringResource(R.string.pick_avatar))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Profile.AVATARS.forEach { emoji ->
                 val selected = emoji == avatar
+                val avatarLabel = stringResource(R.string.avatar_cd, emoji)
                 Surface(
                     shape = CircleShape,
                     color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
@@ -331,7 +342,7 @@ fun ProfileForm(
                         .size(52.dp)
                         .clip(CircleShape)
                         .selectable(selected = selected, role = Role.RadioButton, onClick = { avatar = emoji })
-                        .semantics { contentDescription = "Avatar $emoji" },
+                        .semantics { contentDescription = avatarLabel },
                 ) {
                     Box(contentAlignment = Alignment.Center) { Text(emoji, style = MaterialTheme.typography.headlineSmall) }
                 }
@@ -340,7 +351,7 @@ fun ProfileForm(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it.take(24) },
-            label = { Text("Name") },
+            label = { Text(stringResource(R.string.name)) },
             singleLine = true,
             colors = fieldColors,
             shape = RoundedCornerShape(16.dp),
@@ -351,7 +362,7 @@ fun ProfileForm(
         OutlinedTextField(
             value = handle,
             onValueChange = { value -> handle = value.lowercase().filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(20) },
-            label = { Text("Username") },
+            label = { Text(stringResource(R.string.username)) },
             prefix = { Text("@") },
             singleLine = true,
             colors = fieldColors,
@@ -373,10 +384,10 @@ fun EditProfileScreen(onBack: () -> Unit) {
     val profile by vm.profile.collectAsStateWithLifecycle()
     val initial = profile ?: return
     Column(Modifier.fillMaxSize().statusBarsPadding().imePadding()) {
-        DetailTopBar("Edit profile", onBack)
+        DetailTopBar(stringResource(R.string.edit_profile), onBack)
         ProfileForm(
             initial = initial,
-            actionLabel = "Save",
+            actionLabel = stringResource(R.string.save),
             onSubmit = { vm.save(it, onBack) },
             modifier = Modifier
                 .verticalScroll(rememberScrollState())

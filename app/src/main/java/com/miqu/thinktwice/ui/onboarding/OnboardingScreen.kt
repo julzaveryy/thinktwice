@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.onboarding
 
+import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -102,7 +103,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             modifier = Modifier.weight(1f),
         ) { current ->
             when (current) {
-                0 -> Welcome(onNext = { step = 1 })
+                0 -> Welcome(questionCount = categories.sumOf { it.questions.size }.coerceAtLeast(880), categories = categories, onNext = { step = 1 })
                 1 -> Column(
                     Modifier
                         .fillMaxSize()
@@ -111,12 +112,12 @@ fun OnboardingScreen(onDone: () -> Unit) {
                         .padding(bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Overline("Step 1 of 2")
-                    Text("What should we call you?", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.semantics { heading() })
+                    Overline(stringResource(R.string.step_1))
+                    Text(stringResource(R.string.what_call), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.semantics { heading() })
                     Spacer(Modifier.height(8.dp))
                     ProfileForm(
                         initial = Profile(name, handle, avatar),
-                        actionLabel = "Continue",
+                        actionLabel = stringResource(R.string.continue_),
                         onSubmit = {
                             name = it.name
                             handle = it.handle
@@ -133,10 +134,10 @@ fun OnboardingScreen(onDone: () -> Unit) {
                         modifier = Modifier.weight(1f),
                         header = {
                             Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Overline("Step 2 of 2")
-                                Text("Pick topics you love", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.semantics { heading() })
+                                Overline(stringResource(R.string.step_2))
+                                Text(stringResource(R.string.pick_topics), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.semantics { heading() })
                                 Text(
-                                    "Quick Mix and your For you list will lean on these. You can change them any time.",
+                                    stringResource(R.string.pick_topics_body),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -145,7 +146,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     )
                     Box(Modifier.padding(horizontal = ScreenGutter, vertical = 16.dp)) {
                         PrimaryButton(
-                            if (favorites.isEmpty()) "Skip for now" else "Start playing",
+                            if (favorites.isEmpty()) stringResource(R.string.skip_for_now) else stringResource(R.string.start_playing),
                             onClick = { vm.finish(Profile(name, handle, avatar), favorites.toSet(), onDone) },
                         )
                     }
@@ -156,7 +157,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
 }
 
 @Composable
-private fun Welcome(onNext: () -> Unit) {
+private fun Welcome(questionCount: Int, categories: List<Category>, onNext: () -> Unit) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = ScreenGutter, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -169,20 +170,20 @@ private fun Welcome(onNext: () -> Unit) {
         )
         Spacer(Modifier.height(32.dp))
         Text(
-            "A little quiz.\nA new discovery.",
+            stringResource(R.string.welcome_title),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.fillMaxWidth().semantics { heading() },
         )
         Spacer(Modifier.height(10.dp))
         Text(
-            "440 questions across 22 topics, a fresh Landmark Hunt every day, and a streak worth keeping.",
+            stringResource(R.string.welcome_body, questionCount, categories.size.coerceAtLeast(22)),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.weight(1f))
         Spacer(Modifier.height(24.dp))
-        PrimaryButton("Get started", onNext)
+        PrimaryButton(stringResource(R.string.get_started), onNext)
     }
 }

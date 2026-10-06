@@ -23,8 +23,8 @@ class ThinkTwiceApp : Application() {
 class AppContainer(context: Context) {
     private val database = ThinkTwiceDatabase.create(context)
     val clock = DayClock()
-    val content = ContentRepository(context)
     val settings = SettingsStore(context)
+    val content = ContentRepository(context) { settings.current().language.resolve() }
     val progress = ProgressRepository(database.progressDao(), clock)
     val legacyImporter = LegacyImporter(context, database, settings)
 }

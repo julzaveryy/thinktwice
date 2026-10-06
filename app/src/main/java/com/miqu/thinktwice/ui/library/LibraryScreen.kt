@@ -1,5 +1,8 @@
 package com.miqu.thinktwice.ui.library
 
+import androidx.annotation.StringRes
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -74,7 +77,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
-enum class LibrarySort(val label: String) { DEFAULT("Featured"), NAME("A to Z"), ACCURACY_LOW("Needs practice"), ACCURACY_HIGH("Best accuracy") }
+enum class LibrarySort(@StringRes val label: Int) {
+    DEFAULT(R.string.sort_featured), NAME(R.string.sort_name), ACCURACY_LOW(R.string.sort_low), ACCURACY_HIGH(R.string.sort_high)
+}
 
 data class LibraryTopic(
     val id: String,
@@ -149,11 +154,11 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
                 SearchField(query, { vm.query.value = it }, Modifier.weight(1f))
                 Spacer(Modifier.size(10.dp))
                 Box {
-                    CircleIconButton(Icons.AutoMirrored.Rounded.Sort, "Sort topics", onClick = { sortMenu = true }, size = 52.dp)
+                    CircleIconButton(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.sort_topics), onClick = { sortMenu = true }, size = 52.dp)
                     DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
                         LibrarySort.entries.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option.label, style = MaterialTheme.typography.bodyLarge) },
+                                text = { Text(stringResource(option.label), style = MaterialTheme.typography.bodyLarge) },
                                 onClick = { vm.sort.value = option; sortMenu = false },
                                 trailingIcon = {
                                     if (option == sort) Text("✓", color = MaterialTheme.colorScheme.primary)
@@ -166,7 +171,7 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
         }
         item(key = "tabs", span = { GridItemSpan(maxLineSpan) }) {
             SegmentedTabs(
-                options = listOf("Topics", "Completed · ${state.completed.size}"),
+                options = listOf(stringResource(R.string.tab_topics), stringResource(R.string.tab_completed, state.completed.size)),
                 selected = tab,
                 onSelect = { tab = it },
                 modifier = Modifier.fillMaxWidth(),
@@ -174,17 +179,17 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
         }
         item(key = "count", span = { GridItemSpan(maxLineSpan) }) {
             Overline(
-                if (tab == 0) "${state.totalTopics} topics · ${state.totalQuestions} questions"
-                else "${state.completed.size} topics played",
+                if (tab == 0) stringResource(R.string.library_count, state.totalTopics, state.totalQuestions)
+                else stringResource(R.string.library_played, state.completed.size),
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
         if (list.isEmpty()) {
             item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
                 if (tab == 1 && query.isBlank()) {
-                    EmptyMessage("Nothing completed yet", "Finish a topic quiz and it will show up here with your accuracy.")
+                    EmptyMessage(stringResource(R.string.nothing_completed), stringResource(R.string.nothing_completed_body))
                 } else {
-                    EmptyMessage("No topics found", "No match for “$query”. Try another word.")
+                    EmptyMessage(stringResource(R.string.no_topics), stringResource(R.string.no_topics_body, query))
                 }
             }
         }
@@ -197,6 +202,7 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
 @Composable
 private fun SearchField(value: String, onChange: (String) -> Unit, modifier: Modifier = Modifier) {
     val focusManager = LocalFocusManager.current
+    val searchLabel = stringResource(R.string.search_topics)
     Surface(
         modifier = modifier.heightIn(min = 52.dp),
         shape = CircleShape,
@@ -208,7 +214,7 @@ private fun SearchField(value: String, onChange: (String) -> Unit, modifier: Mod
             Spacer(Modifier.size(10.dp))
             Box(Modifier.weight(1f).padding(vertical = 15.dp)) {
                 if (value.isEmpty()) {
-                    Text("Search topics", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.search_topics), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 BasicTextField(
                     value = value,
@@ -218,12 +224,12 @@ private fun SearchField(value: String, onChange: (String) -> Unit, modifier: Mod
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search topics" },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = searchLabel },
                 )
             }
             if (value.isNotEmpty()) {
                 IconButton(onClick = { onChange("") }) {
-                    Icon(Icons.Rounded.Close, contentDescription = "Clear search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.clear_search), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -252,7 +258,7 @@ private fun TopicTile(topic: LibraryTopic, onClick: () -> Unit) {
                         modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
                     ) {
                         Text(
-                            "${topic.accuracy}%",
+                            stringResource(R.string.percent, topic.accuracy),
                             style = MaterialTheme.typography.labelLarge,
                             color = AppTheme.extra.success,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -270,7 +276,7 @@ private fun TopicTile(topic: LibraryTopic, onClick: () -> Unit) {
                 modifier = Modifier.padding(horizontal = 4.dp),
             )
             Text(
-                "${topic.questionCount} questions",
+                stringResource(R.string.questions_count, topic.questionCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),

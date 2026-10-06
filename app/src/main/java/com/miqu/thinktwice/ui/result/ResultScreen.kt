@@ -1,5 +1,10 @@
 package com.miqu.thinktwice.ui.result
 
+import com.miqu.thinktwice.ui.common.levelName
+import com.miqu.thinktwice.ui.common.quizTitle
+import com.miqu.thinktwice.ui.common.labelRes
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -98,7 +103,7 @@ class ResultViewModel(private val container: AppContainer, saved: SavedStateHand
             val stats = container.progress.stats.first()
             val kind = ProgressRepository.kindOf(attempt)
             _state.value = ResultState(
-                title = attempt.title,
+                title = content.category(attempt.quizId)?.title ?: attempt.title,
                 kind = kind,
                 categoryId = attempt.quizId.takeIf { kind == QuizKind.CATEGORY },
                 correct = attempt.correct,
@@ -134,11 +139,11 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
     ) {
         item(key = "close") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CircleIconButton(Icons.Rounded.Close, "Close results", onDone)
+                CircleIconButton(Icons.Rounded.Close, stringResource(R.string.close_results), onDone)
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text(state.title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground)
-                    Text(state.kind.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(quizTitle(state.kind, state.title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(state.kind.labelRes()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -148,10 +153,10 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
                 Spacer(Modifier.height(16.dp))
                 Text(
                     when {
-                        state.accuracy == 100 -> "Perfect round!"
-                        state.accuracy >= 80 -> "Brilliant work"
-                        state.accuracy >= 50 -> "Nicely done"
-                        else -> "Every miss is a lesson"
+                        state.accuracy == 100 -> stringResource(R.string.res_perfect)
+                        state.accuracy >= 80 -> stringResource(R.string.res_brilliant)
+                        state.accuracy >= 50 -> stringResource(R.string.res_nice)
+                        else -> stringResource(R.string.res_lesson)
                     },
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onBackground,
@@ -164,18 +169,19 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
                     Column(Modifier.fillMaxWidth().padding(20.dp)) {
                         Row(verticalAlignment = Alignment.Bottom) {
                             Column(Modifier.weight(1f)) {
-                                Overline("XP earned", color = extra.featureMuted)
-                                Text("+${state.xp + state.bonus} XP", style = MaterialTheme.typography.headlineMedium, color = extra.amber)
+                                Overline(stringResource(R.string.xp_earned), color = extra.featureMuted)
+                                Text(stringResource(R.string.plus_xp, state.xp + state.bonus), style = MaterialTheme.typography.headlineMedium, color = extra.amber)
                             }
                             if (state.bonus > 0) {
-                                Text("incl. +${state.bonus} first-clear bonus", style = MaterialTheme.typography.bodySmall, color = extra.featureMuted)
+                                Text(stringResource(R.string.bonus_incl, state.bonus), style = MaterialTheme.typography.bodySmall, color = extra.featureMuted)
                             }
                         }
                         Spacer(Modifier.height(14.dp))
                         LinearMeter(state.level.progress, extra.amber, extra.featureTrack)
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            state.level.next?.let { "${state.level.level.name} · ${state.level.xpToNext} XP to ${it.name}" } ?: "${state.level.level.name} · top level",
+                            state.level.next?.let { stringResource(R.string.level_progress, levelName(state.level.level), state.level.xpToNext, levelName(it)) }
+                                ?: stringResource(R.string.level_top, levelName(state.level.level)),
                             style = MaterialTheme.typography.bodySmall,
                             color = extra.featureMuted,
                         )
@@ -185,9 +191,9 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
         }
         item(key = "actions") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PrimaryButton("Play again", onClick = { onPlayAgain(state.kind, state.categoryId) })
+                PrimaryButton(stringResource(R.string.play_again), onClick = { onPlayAgain(state.kind, state.categoryId) })
                 PrimaryButton(
-                    "Done",
+                    stringResource(R.string.done),
                     onClick = onDone,
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface,
@@ -195,7 +201,7 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
             }
         }
         if (state.items.isNotEmpty()) {
-            item(key = "review-title") { SectionHeader("Review answers", Modifier.padding(top = 8.dp)) }
+            item(key = "review-title") { SectionHeader(stringResource(R.string.review_answers), Modifier.padding(top = 8.dp)) }
             items(state.items) { item -> ReviewRow(item) }
         }
         item(key = "bottom") { Spacer(Modifier.navigationBarsPadding()) }
@@ -212,9 +218,10 @@ private fun ScoreRing(accuracy: Int, correct: Int, total: Int) {
         else -> extra.danger
     }
     val sweep = remember { Animatable(0f) }
+    val scoreLabel = stringResource(R.string.score_cd, correct, total, accuracy)
     LaunchedEffect(accuracy) { sweep.animateTo(accuracy / 100f, tween(900)) }
     Box(
-        Modifier.size(168.dp).semantics(mergeDescendants = true) { contentDescription = "$correct of $total correct, $accuracy percent" },
+        Modifier.size(168.dp).semantics(mergeDescendants = true) { contentDescription = scoreLabel },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
@@ -223,8 +230,8 @@ private fun ScoreRing(accuracy: Int, correct: Int, total: Int) {
             drawArc(color, -90f, 360f * sweep.value, useCenter = false, style = stroke)
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("$correct/$total", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
-            Text("$accuracy% correct", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.score, correct, total), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.pct_correct, accuracy), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -242,7 +249,7 @@ private fun ReviewRow(item: ReviewItem) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             if (item.isCorrect) Icons.Rounded.Check else Icons.Rounded.Close,
-                            contentDescription = if (item.isCorrect) "Correct" else "Incorrect",
+                            contentDescription = stringResource(if (item.isCorrect) R.string.correct else R.string.incorrect),
                             tint = MaterialTheme.colorScheme.surface,
                             modifier = Modifier.size(16.dp),
                         )
@@ -254,12 +261,12 @@ private fun ReviewRow(item: ReviewItem) {
                 Text(item.question, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 if (!item.isCorrect) {
                     Text(
-                        "Your answer: ${item.yourAnswer ?: "Skipped"}",
+                        stringResource(R.string.your_answer_is, item.yourAnswer ?: stringResource(R.string.skipped)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = extra.danger,
                     )
                 }
-                Text("Answer: ${item.correctAnswer}", style = MaterialTheme.typography.bodyMedium, color = extra.success)
+                Text(stringResource(R.string.answer_is, item.correctAnswer), style = MaterialTheme.typography.bodyMedium, color = extra.success)
             }
         }
     }

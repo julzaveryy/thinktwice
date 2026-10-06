@@ -1,5 +1,8 @@
 package com.miqu.thinktwice.ui.navigation
 
+import androidx.annotation.StringRes
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -79,16 +82,16 @@ import com.miqu.thinktwice.ui.theme.AppTheme
 private data class Tab(
     val route: Any,
     val matches: (NavDestination) -> Boolean,
-    val label: String,
+    @StringRes val label: Int,
     val icon: ImageVector,
     val selectedIcon: ImageVector,
 )
 
 private val tabs = listOf(
-    Tab(HomeRoute, { it.hasRoute<HomeRoute>() }, "Home", Icons.Outlined.Home, Icons.Rounded.Home),
-    Tab(LibraryRoute, { it.hasRoute<LibraryRoute>() }, "Library", Icons.Outlined.AutoStories, Icons.Rounded.AutoStories),
-    Tab(ActivityRoute, { it.hasRoute<ActivityRoute>() }, "Activity", Icons.Outlined.Insights, Icons.Rounded.Insights),
-    Tab(ProfileRoute, { it.hasRoute<ProfileRoute>() }, "Profile", Icons.Outlined.AccountCircle, Icons.Rounded.AccountCircle),
+    Tab(HomeRoute, { it.hasRoute<HomeRoute>() }, R.string.tab_home, Icons.Outlined.Home, Icons.Rounded.Home),
+    Tab(LibraryRoute, { it.hasRoute<LibraryRoute>() }, R.string.tab_library, Icons.Outlined.AutoStories, Icons.Rounded.AutoStories),
+    Tab(ActivityRoute, { it.hasRoute<ActivityRoute>() }, R.string.tab_activity, Icons.Outlined.Insights, Icons.Rounded.Insights),
+    Tab(ProfileRoute, { it.hasRoute<ProfileRoute>() }, R.string.tab_profile, Icons.Outlined.AccountCircle, Icons.Rounded.AccountCircle),
 )
 
 /** Space reserved at the bottom of tab screens so content clears the floating bar. */
@@ -260,6 +263,7 @@ private fun FloatingTabBar(destination: NavDestination?, onSelect: (Any) -> Unit
         ) {
             tabs.forEach { tab ->
                 val selected = destination != null && tab.matches(destination)
+                val label = stringResource(tab.label)
                 Row(
                     modifier = Modifier
                         .weight(if (selected) 1.5f else 1f)
@@ -272,13 +276,13 @@ private fun FloatingTabBar(destination: NavDestination?, onSelect: (Any) -> Unit
                 ) {
                     Icon(
                         if (selected) tab.selectedIcon else tab.icon,
-                        contentDescription = if (selected) null else tab.label,
+                        contentDescription = if (selected) null else label,
                         tint = if (selected) Color.White else extra.navContent,
                         modifier = Modifier.size(22.dp),
                     )
                     if (selected) {
                         Spacer(Modifier.width(6.dp))
-                        Text(tab.label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1)
+                        Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1)
                     }
                 }
             }

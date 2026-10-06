@@ -10,16 +10,30 @@ import org.junit.Test
 import java.io.File
 
 class ContentAndPlansTest {
-    private val content: Content = parseContent(File("src/main/assets/content.json").readText())
+    private val content: Content = parseContent(File("src/main/assets/content.en.json").readText())
+    private val indonesian: Content = parseContent(File("src/main/assets/content.id.json").readText())
 
     @Test fun `bundled content is complete and valid`() {
         assertEquals(22, content.categories.size)
-        assertEquals(440, content.questionCount)
-        content.categories.forEach { assertEquals(it.id, 20, it.questions.size) }
+        assertEquals(880, content.questionCount)
+        content.categories.forEach { assertEquals(it.id, 40, it.questions.size) }
         content.allQuestions.forEach { q ->
             assertEquals(q.id, 4, q.answers.size)
             assertEquals(q.id, 4, q.answers.toSet().size)
             assertTrue(q.id, q.correctIndex in 0..3)
+            assertTrue(q.id, !q.explanation.isNullOrBlank())
+        }
+    }
+
+    @Test fun `indonesian content mirrors english ids and answer keys`() {
+        assertEquals(content.categories.map { it.id }, indonesian.categories.map { it.id })
+        assertEquals(content.questionsById.keys, indonesian.questionsById.keys)
+        content.allQuestions.forEach { en ->
+            val id = indonesian.questionsById.getValue(en.id)
+            assertEquals(en.id, en.correctIndex, id.correctIndex)
+            assertEquals(en.id, en.difficulty, id.difficulty)
+            assertEquals(en.id, 4, id.answers.toSet().size)
+            assertTrue(en.id, !id.explanation.isNullOrBlank())
         }
     }
 

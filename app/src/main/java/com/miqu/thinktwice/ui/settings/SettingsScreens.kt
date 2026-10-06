@@ -1,5 +1,8 @@
 package com.miqu.thinktwice.ui.settings
 
+import com.miqu.thinktwice.data.prefs.AppLanguage
+import com.miqu.thinktwice.R
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.content.Context
 import android.os.Build
@@ -91,6 +94,9 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     fun setTheme(mode: ThemeMode) {
         viewModelScope.launch { store.setTheme(mode) }
     }
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch { store.setLanguage(language) }
+    }
     fun setSound(on: Boolean) {
         viewModelScope.launch { store.setSound(on) }
     }
@@ -123,7 +129,7 @@ fun SettingsScreen(onBack: () -> Unit, onEditProfile: () -> Unit, onEditTopics: 
     }
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        DetailTopBar("Settings", onBack)
+        DetailTopBar(stringResource(R.string.settings), onBack)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -132,31 +138,40 @@ fun SettingsScreen(onBack: () -> Unit, onEditProfile: () -> Unit, onEditTopics: 
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SettingsGroup("Appearance") {
-                Text("Theme", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+            SettingsGroup(stringResource(R.string.appearance)) {
+                Text(stringResource(R.string.theme), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.size(10.dp))
                 SegmentedTabs(
-                    options = listOf("System", "Light", "Dark"),
+                    options = listOf(stringResource(R.string.theme_system), stringResource(R.string.theme_light), stringResource(R.string.theme_dark)),
                     selected = settings.theme.ordinal,
                     onSelect = { vm.setTheme(ThemeMode.entries[it]) },
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Spacer(Modifier.size(16.dp))
+                Text(stringResource(R.string.language), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.size(10.dp))
+                SegmentedTabs(
+                    options = listOf(stringResource(R.string.lang_system), stringResource(R.string.lang_en), stringResource(R.string.lang_id)),
+                    selected = settings.language.ordinal,
+                    onSelect = { vm.setLanguage(AppLanguage.entries[it]) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
-            SettingsGroup("Personalization") {
-                LinkRow("Edit profile", settings.profile.displayName, onEditProfile)
+            SettingsGroup(stringResource(R.string.personalization)) {
+                LinkRow(stringResource(R.string.edit_profile), settings.profile.displayName, onEditProfile)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(
-                    "Favorite topics",
-                    if (settings.favorites.isEmpty()) "All topics" else "${settings.favorites.size} selected",
+                    stringResource(R.string.favorite_topics),
+                    if (settings.favorites.isEmpty()) stringResource(R.string.all_topics) else stringResource(R.string.n_selected, settings.favorites.size),
                     onEditTopics,
                 )
             }
-            SettingsGroup("Preferences") {
-                ToggleRow("Sound effects", "Short tones when you answer", settings.sound, vm::setSound)
+            SettingsGroup(stringResource(R.string.preferences)) {
+                ToggleRow(stringResource(R.string.sound), stringResource(R.string.sound_body), settings.sound, vm::setSound)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                ToggleRow("Haptics", "A light buzz on every answer", settings.haptics, vm::setHaptics)
+                ToggleRow(stringResource(R.string.haptics), stringResource(R.string.haptics_body), settings.haptics, vm::setHaptics)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                ToggleRow("Daily reminder", "7 pm, only if you haven’t played", settings.reminders && Reminders.canNotify(context)) { on ->
+                ToggleRow(stringResource(R.string.daily_reminder), stringResource(R.string.daily_reminder_body), settings.reminders && Reminders.canNotify(context)) { on ->
                     if (on && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Reminders.canNotify(context)) {
                         permission.launch(Manifest.permission.POST_NOTIFICATIONS)
                     } else {
@@ -164,19 +179,19 @@ fun SettingsScreen(onBack: () -> Unit, onEditProfile: () -> Unit, onEditTopics: 
                     }
                 }
             }
-            SettingsGroup("Data") {
+            SettingsGroup(stringResource(R.string.data)) {
                 Text(
-                    "Your profile and progress are stored only on this device.",
+                    stringResource(R.string.data_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.size(8.dp))
                 TextButton(onClick = { confirmReset = true }, modifier = Modifier.heightIn(min = 44.dp)) {
-                    Text("Reset progress", style = MaterialTheme.typography.titleSmall, color = AppTheme.extra.danger)
+                    Text(stringResource(R.string.reset_progress), style = MaterialTheme.typography.titleSmall, color = AppTheme.extra.danger)
                 }
             }
             Text(
-                "Think Twice ${BuildConfig.VERSION_NAME}",
+                stringResource(R.string.version, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
@@ -187,14 +202,14 @@ fun SettingsScreen(onBack: () -> Unit, onEditProfile: () -> Unit, onEditTopics: 
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text("Reset all progress?") },
-            text = { Text("This deletes your quiz history, XP, streak and mistakes. Your profile stays. This can’t be undone.") },
+            title = { Text(stringResource(R.string.reset_title)) },
+            text = { Text(stringResource(R.string.reset_body)) },
             confirmButton = {
                 TextButton(onClick = { confirmReset = false; vm.resetProgress() }) {
-                    Text("Reset", color = AppTheme.extra.danger)
+                    Text(stringResource(R.string.reset), color = AppTheme.extra.danger)
                 }
             },
-            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }
@@ -264,10 +279,10 @@ fun TopicsScreen(onBack: () -> Unit) {
     var picks by rememberSaveable(favorites) { mutableStateOf(favorites.toList()) }
     val selected = picks.toSet()
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-        DetailTopBar("Favorite topics", onBack)
+        DetailTopBar(stringResource(R.string.favorite_topics), onBack)
         TopicPicker(categories, selected, onToggle = { id -> picks = if (id in picks) picks - id else picks + id }, modifier = Modifier.weight(1f))
         Box(Modifier.padding(horizontal = ScreenGutter, vertical = 16.dp)) {
-            PrimaryButton(if (selected.isEmpty()) "Use all topics" else "Save ${selected.size} topics", onClick = { vm.save(selected, onBack) })
+            PrimaryButton(if (selected.isEmpty()) stringResource(R.string.use_all_topics) else stringResource(R.string.save_n_topics, selected.size), onClick = { vm.save(selected, onBack) })
         }
     }
 }

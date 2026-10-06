@@ -1,6 +1,6 @@
 # Think Twice
 
-A native Android quiz app: 440 questions across 22 topics, a daily Landmark Hunt, a weekly spotlight,
+A native Android quiz app in English and Indonesian: 880 questions across 22 topics, each with an explanation, a daily Landmark Hunt, a weekly spotlight,
 three game modes, streaks, levels and badges. Written in Kotlin with Jetpack Compose.
 
 ## Open in Android Studio
@@ -15,11 +15,11 @@ Requirements: Android Studio Narwhal (2025.1) or newer, JDK 17+ (bundled with An
 
 | Layer | Choice |
 | --- | --- |
-| UI | Jetpack Compose, Material 3, Sunghyun Sans type scale |
+| UI | Jetpack Compose, Material 3, Sunghyun Sans type scale; English + Indonesian (`values-in`) |
 | Navigation | Navigation Compose with type-safe routes (kotlinx.serialization) |
 | State | ViewModel + StateFlow, `collectAsStateWithLifecycle`, SavedStateHandle |
 | Storage | Room (quiz history, mistakes, challenge progress), DataStore (settings, profile) |
-| Content | `app/src/main/assets/content.json`, loaded once off the main thread |
+| Content | `app/src/main/assets/content.en.json` + `content.id.json` (same ids and answer keys), loaded off the main thread |
 | Background | WorkManager daily reminder |
 
 ## Project layout

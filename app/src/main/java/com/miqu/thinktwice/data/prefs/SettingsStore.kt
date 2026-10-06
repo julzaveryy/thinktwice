@@ -14,6 +14,17 @@ import kotlinx.coroutines.flow.map
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
+/** App language. SYSTEM follows the phone: Indonesian if the phone is set to Indonesian, otherwise English. */
+enum class AppLanguage(val tag: String?) {
+    SYSTEM(null), ENGLISH("en"), INDONESIAN("id");
+
+    /** The concrete language to use right now: "en" or "id". */
+    fun resolve(): String = tag ?: when (java.util.Locale.getDefault().language) {
+        "in", "id" -> "id"
+        else -> "en"
+    }
+}
+
 data class Profile(
     val name: String = "",
     val handle: String = "",
@@ -36,6 +47,7 @@ data class Settings(
     val sound: Boolean = true,
     val haptics: Boolean = true,
     val reminders: Boolean = false,
+    val language: AppLanguage = AppLanguage.SYSTEM,
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -52,6 +64,7 @@ class SettingsStore(private val context: Context) {
         val haptics = booleanPreferencesKey("haptics")
         val reminders = booleanPreferencesKey("reminders")
         val legacyImported = booleanPreferencesKey("legacy_imported")
+        val language = stringPreferencesKey("language")
     }
 
     val settings: Flow<Settings> = context.dataStore.data.map { p ->
@@ -67,6 +80,7 @@ class SettingsStore(private val context: Context) {
             sound = p[Keys.sound] ?: true,
             haptics = p[Keys.haptics] ?: true,
             reminders = p[Keys.reminders] ?: false,
+            language = p[Keys.language]?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() } ?: AppLanguage.SYSTEM,
         )
     }
 
@@ -91,6 +105,7 @@ class SettingsStore(private val context: Context) {
     suspend fun setSound(on: Boolean) = context.dataStore.edit { it[Keys.sound] = on }
     suspend fun setHaptics(on: Boolean) = context.dataStore.edit { it[Keys.haptics] = on }
     suspend fun setReminders(on: Boolean) = context.dataStore.edit { it[Keys.reminders] = on }
+    suspend fun setLanguage(language: AppLanguage) = context.dataStore.edit { it[Keys.language] = language.name }
 
     suspend fun legacyImported(): Boolean = context.dataStore.data.first()[Keys.legacyImported] ?: false
     suspend fun markLegacyImported() = context.dataStore.edit { it[Keys.legacyImported] = true }
