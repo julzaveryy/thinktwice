@@ -60,7 +60,7 @@ private data class ContentDto(
 )
 
 @Serializable
-private data class CategoryDto(val id: String, val title: String, val emoji: String, val color: String)
+private data class CategoryDto(val id: String, val title: String, val emoji: String = "")
 
 @Serializable
 private data class QuestionDto(
