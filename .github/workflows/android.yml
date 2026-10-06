@@ -27,7 +27,15 @@ jobs:
           java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v6
       - name: Unit tests, lint and debug APK
-        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --continue 2>&1 | tee build.log
+      - name: Report build errors as annotations
+        if: failure()
+        run: |
+          grep -E "^e: |error:|FAILED|AssertionError|expected:<|Error: |Lint found" build.log | head -40 | while IFS= read -r line; do echo "::error::$line"; done
+          for f in app/build/reports/lint-results-debug.txt; do [ -f "$f" ] && grep -E "Error|error" "$f" | head -20 | while IFS= read -r line; do echo "::error::$line"; done; done
+          for f in app/build/test-results/testDebugUnitTest/*.xml; do grep -h -A2 "<failure" "$f" | head -20 | while IFS= read -r line; do echo "::error::$line"; done; done
       - name: Release APK (minified)
         run: ./gradlew :app:assembleRelease --stacktrace
       - name: Upload debug APK
