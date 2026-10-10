@@ -1,5 +1,19 @@
 package com.miqu.thinktwice.ui.components
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.miqu.thinktwice.ui.theme.pressScale
+import com.miqu.thinktwice.ui.theme.Motion
 import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
@@ -82,7 +96,16 @@ fun AppCard(
     val stroke = if (border) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null
     val inner: @Composable () -> Unit = { Column(Modifier.padding(contentPadding), content = content) }
     if (onClick != null) {
-        Surface(onClick = onClick, modifier = modifier, shape = shape, color = color, border = stroke, content = inner)
+        val interaction = remember { MutableInteractionSource() }
+        Surface(
+            onClick = onClick,
+            modifier = modifier.pressScale(interaction),
+            shape = shape,
+            color = color,
+            border = stroke,
+            interactionSource = interaction,
+            content = inner,
+        )
     } else {
         Surface(modifier = modifier, shape = shape, color = color, border = stroke, content = inner)
     }
@@ -98,22 +121,38 @@ fun PrimaryButton(
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     trailingIcon: ImageVector? = null,
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val container by animateColorAsState(if (enabled) containerColor else MaterialTheme.colorScheme.surfaceVariant, Motion.effects(), label = "btn")
+    val animatedContent by animateColorAsState(contentColor, Motion.effects(), label = "btnContent")
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.fillMaxWidth().height(56.dp),
+        interactionSource = interaction,
+        modifier = modifier.fillMaxWidth().height(56.dp).pressScale(interaction, 0.97f),
         shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = container,
+            contentColor = animatedContent,
+            disabledContainerColor = container,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
     ) {
-        Text(text, style = MaterialTheme.typography.titleMedium)
-        if (trailingIcon != null) {
-            Spacer(Modifier.width(8.dp))
-            Icon(trailingIcon, contentDescription = null, modifier = Modifier.size(20.dp))
+        // Label changes slide up into place instead of snapping.
+        AnimatedContent(
+            targetState = text to trailingIcon,
+            transitionSpec = {
+                (slideInVertically(Motion.spatial()) { it / 2 } + fadeIn(tween(160, delayMillis = 40))) togetherWith
+                    (slideOutVertically(Motion.spatial()) { -it / 2 } + fadeOut(tween(90)))
+            },
+            label = "buttonLabel",
+        ) { (label, icon) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, style = MaterialTheme.typography.titleMedium)
+                if (icon != null) {
+                    Spacer(Modifier.width(8.dp))
+                    Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+                }
+            }
         }
     }
 }
@@ -127,12 +166,14 @@ fun PillButton(
     containerColor: Color = AppTheme.extra.featureCard,
     contentColor: Color = AppTheme.extra.onFeatureCard,
 ) {
+    val interaction = remember { MutableInteractionSource() }
     Surface(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 44.dp),
+        modifier = modifier.heightIn(min = 44.dp).pressScale(interaction, 0.94f),
         shape = CircleShape,
         color = containerColor,
         contentColor = contentColor,
+        interactionSource = interaction,
     ) {
         Box(Modifier.padding(horizontal = 18.dp, vertical = 12.dp), contentAlignment = Alignment.Center) {
             Text(text, style = MaterialTheme.typography.labelLarge)
@@ -208,7 +249,7 @@ fun SegmentedTabs(
     ) {
         BoxWithConstraints(Modifier.padding(4.dp)) {
             val segment = maxWidth / options.size
-            val thumbOffset by animateDpAsState(segment * selected, label = "segment")
+            val thumbOffset by animateDpAsState(segment * selected, Motion.bouncy(), label = "segment")
             Surface(
                 modifier = Modifier.offset(x = thumbOffset).width(segment).fillMaxHeight(),
                 shape = CircleShape,
@@ -277,11 +318,18 @@ fun StreakChip(days: Int, modifier: Modifier = Modifier) {
                 tint = if (days > 0) Color(0xFFE8772E) else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp),
             )
-            Text(
-                if (days == 1) stringResource(R.string.streak_one_day) else stringResource(R.string.streak_days, days),
-                style = MaterialTheme.typography.labelLarge,
-                color = if (days > 0) extra.onAmberContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // The number rolls up when the streak grows.
+            AnimatedContent(
+                targetState = days,
+                transitionSpec = { (slideInVertically(Motion.spatial()) { it } + fadeIn()) togetherWith (slideOutVertically(Motion.spatial()) { -it } + fadeOut()) },
+                label = "streak",
+            ) { value ->
+                Text(
+                    if (value == 1) stringResource(R.string.streak_one_day) else stringResource(R.string.streak_days, value),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (days > 0) extra.onAmberContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -296,7 +344,8 @@ fun SegmentedProgress(
 ) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
         colors.forEach { color ->
-            Box(Modifier.weight(1f).height(height).clip(CircleShape).background(color))
+            val animated by animateColorAsState(color, Motion.effects(), label = "segment")
+            Box(Modifier.weight(1f).height(height).clip(CircleShape).background(animated))
         }
     }
 }
@@ -310,7 +359,10 @@ fun LinearMeter(
     modifier: Modifier = Modifier,
     height: Dp = 8.dp,
 ) {
-    val animated by animateFloatAsState(progress.coerceIn(0f, 1f), label = "meter")
+    // Fills from empty when it first appears, then springs to new values.
+    val fill = remember { Animatable(0f) }
+    LaunchedEffect(progress) { fill.animateTo(progress.coerceIn(0f, 1f), spring(dampingRatio = 0.85f, stiffness = 120f)) }
+    val animated = fill.value
     BoxWithConstraints(modifier.fillMaxWidth().height(height).clip(CircleShape).background(track)) {
         Box(
             Modifier

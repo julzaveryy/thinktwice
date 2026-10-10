@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.activity
 
+import com.miqu.thinktwice.ui.theme.Motion
 import com.miqu.thinktwice.ui.common.quizTitle
 import com.miqu.thinktwice.ui.common.labelRes
 import androidx.annotation.StringRes
@@ -179,7 +180,9 @@ fun ActivityScreen(
                 if (history.isEmpty()) {
                     item(key = "history-empty") { EmptyMessage(stringResource(R.string.no_quizzes), stringResource(R.string.no_quizzes_body)) }
                 }
-                items(history, key = { "history_${it.id}" }) { AttemptRow(it, state.topicTitles) { onOpenAttempt(it.id) } }
+                items(history, key = { "history_${it.id}" }) {
+                    Box(Modifier.animateItem(placementSpec = Motion.spatial())) { AttemptRow(it, state.topicTitles) { onOpenAttempt(it.id) } }
+                }
             }
             else -> {
                 if (state.mistakes.isEmpty()) {
@@ -194,7 +197,9 @@ fun ActivityScreen(
                             onPractice,
                         )
                     }
-                    items(state.mistakes, key = { "mistake_${it.question.id}" }) { MistakeRow(it) }
+                    items(state.mistakes, key = { "mistake_${it.question.id}" }) {
+                        Box(Modifier.animateItem(placementSpec = Motion.spatial())) { MistakeRow(it) }
+                    }
                 }
             }
         }

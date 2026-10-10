@@ -1,5 +1,11 @@
 package com.miqu.thinktwice.ui.home
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.miqu.thinktwice.ui.theme.staggeredEntrance
 import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
@@ -79,6 +85,10 @@ fun HomeScreen(
     val vm = appViewModel { c, _ -> HomeViewModel(c) }
     val state by vm.state.collectAsStateWithLifecycle()
     if (state.loading) return
+    // Cards rise in one after another the first time Home appears, not on every return to it.
+    var played by rememberSaveable { mutableStateOf(false) }
+    val animateIn = !played
+    LaunchedEffect(Unit) { played = true }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -87,7 +97,7 @@ fun HomeScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item(key = "header") {
+        item(key = "header") { Stagger(0, animateIn) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(onClick = onOpenProfile, shape = CircleShape, color = Color.Transparent) {
                     AvatarBubble(state.profile.avatar, size = 44.dp)
@@ -103,8 +113,8 @@ fun HomeScreen(
                 )
                 StreakChip(state.streak)
             }
-        }
-        item(key = "headline") {
+        }}
+        item(key = "headline") { Stagger(1, animateIn) {
             val headline = when {
                 state.daily?.inProgress == true -> stringResource(R.string.headline_continue)
                 !state.hasPlayed -> stringResource(R.string.headline_first)
@@ -116,11 +126,11 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(top = 4.dp).semantics { heading() },
             )
-        }
+        }}
         state.daily?.let { daily ->
-            item(key = "daily") { DailyHero(daily, onClick = { onStartQuiz(QuizKind.DAILY, null) }) }
+            item(key = "daily") { Stagger(2, animateIn) { DailyHero(daily, onClick = { onStartQuiz(QuizKind.DAILY, null) }) }}
         }
-        item(key = "tiles") {
+        item(key = "tiles") { Stagger(3, animateIn) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FeatureTile(
                     modifier = Modifier.weight(1f),
@@ -148,9 +158,9 @@ fun HomeScreen(
                     onClick = { onStartQuiz(QuizKind.WEEKLY, null) },
                 )
             }
-        }
-        item(key = "modes-title") { SectionHeader(stringResource(R.string.game_modes), Modifier.padding(top = 8.dp)) }
-        item(key = "modes") {
+        }}
+        item(key = "modes-title") { Stagger(4, animateIn) { SectionHeader(stringResource(R.string.game_modes), Modifier.padding(top = 8.dp)) }}
+        item(key = "modes") { Stagger(5, animateIn) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ModeCard(Modifier.weight(1f), Icons.Rounded.Timer, stringResource(R.string.title_time_attack), stringResource(R.string.seconds_90), Tint.SKY) {
                     onStartQuiz(QuizKind.TIME_ATTACK, null)
@@ -162,14 +172,19 @@ fun HomeScreen(
                     onStartQuiz(QuizKind.ENDLESS, null)
                 }
             }
-        }
-        item(key = "foryou-title") {
+        }}
+        item(key = "foryou-title") { Stagger(6, animateIn) {
             SectionHeader(stringResource(R.string.for_you), Modifier.padding(top = 8.dp), action = stringResource(R.string.see_all), onAction = onOpenLibrary)
-        }
-        items(state.forYou, key = { "topic_${it.id}" }) { topic ->
-            TopicRow(topic, onClick = { onStartQuiz(QuizKind.CATEGORY, topic.id) })
+        }}
+        itemsIndexed(state.forYou, key = { _, it -> "topic_${it.id}" }) { i, topic ->
+            Stagger(7 + i, animateIn) { TopicRow(topic, onClick = { onStartQuiz(QuizKind.CATEGORY, topic.id) }) }
         }
     }
+}
+
+@Composable
+private fun Stagger(index: Int, enabled: Boolean, content: @Composable () -> Unit) {
+    Box(Modifier.staggeredEntrance(index, enabled)) { content() }
 }
 
 @Composable

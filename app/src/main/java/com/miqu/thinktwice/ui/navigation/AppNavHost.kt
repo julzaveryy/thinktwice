@@ -1,5 +1,14 @@
 package com.miqu.thinktwice.ui.navigation
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import com.miqu.thinktwice.ui.theme.pressScale
+import com.miqu.thinktwice.ui.theme.Motion
 import androidx.annotation.StringRes
 import com.miqu.thinktwice.R
 import androidx.compose.ui.res.stringResource
@@ -115,22 +124,22 @@ fun AppNavHost(onboarded: Boolean) {
             startDestination = if (onboarded) HomeRoute else OnboardingRoute,
             // Tabs fade through (old fades out before the new fades in, so text never overlaps);
             // everything else slides. The quiz rises over the screen below, which stays put.
-            enterTransition = { if (betweenTabs()) fadeThroughIn() else slideInHorizontally(tween(300)) { it } },
+            enterTransition = { if (betweenTabs()) Motion.fadeThroughIn() else Motion.sharedAxisIn(forward = true) },
             exitTransition = {
                 when {
-                    betweenTabs() -> fadeThroughOut()
+                    betweenTabs() -> Motion.fadeThroughOut()
                     targetState.destination.hasRoute<QuizRoute>() -> ExitTransition.KeepUntilTransitionsFinished
-                    else -> slideOutHorizontally(tween(300)) { -it / 4 }
+                    else -> Motion.sharedAxisOut(forward = true)
                 }
             },
             popEnterTransition = {
                 when {
-                    betweenTabs() -> fadeThroughIn()
+                    betweenTabs() -> Motion.fadeThroughIn()
                     initialState.destination.hasRoute<QuizRoute>() -> EnterTransition.None
-                    else -> slideInHorizontally(tween(300)) { -it / 4 }
+                    else -> Motion.sharedAxisIn(forward = false)
                 }
             },
-            popExitTransition = { if (betweenTabs()) fadeThroughOut() else slideOutHorizontally(tween(300)) { it } },
+            popExitTransition = { if (betweenTabs()) Motion.fadeThroughOut() else Motion.sharedAxisOut(forward = false) },
         ) {
             screen<OnboardingRoute> {
                 OnboardingScreen(onDone = {
@@ -165,8 +174,8 @@ fun AppNavHost(onboarded: Boolean) {
                 )
             }
             screen<QuizRoute>(
-                enter = { slideInVertically(tween(320)) { it } },
-                popExit = { slideOutVertically(tween(280)) { it } },
+                enter = { Motion.sheetIn() },
+                popExit = { Motion.sheetOut() },
             ) { entry ->
                 QuizScreen(
                     onClose = { nav.popIfCurrent(entry) },
@@ -211,8 +220,6 @@ fun AppNavHost(onboarded: Boolean) {
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.betweenTabs(): Boolean =
     tabs.any { it.matches(initialState.destination) } && tabs.any { it.matches(targetState.destination) }
 
-private fun fadeThroughIn(): EnterTransition = fadeIn(tween(durationMillis = 210, delayMillis = 90))
-private fun fadeThroughOut(): ExitTransition = fadeOut(tween(durationMillis = 90))
 
 /**
  * A destination drawn on an opaque background, so a screen sliding over another
@@ -264,25 +271,46 @@ private fun FloatingTabBar(destination: NavDestination?, onSelect: (Any) -> Unit
             tabs.forEach { tab ->
                 val selected = destination != null && tab.matches(destination)
                 val label = stringResource(tab.label)
+                // The active pill morphs between tabs: width, colour and label all spring together.
+                val weight by animateFloatAsState(if (selected) 1.6f else 1f, Motion.bouncy(), label = "tabWeight")
+                val pill by animateColorAsState(
+                    if (selected) MaterialTheme.colorScheme.primary else Color.Transparent, Motion.effects(), label = "tabPill",
+                )
+                val tint by animateColorAsState(if (selected) Color.White else extra.navContent, Motion.effects(), label = "tabTint")
+                val iconScale by animateFloatAsState(if (selected) 1.08f else 1f, Motion.bouncy(), label = "tabIcon")
+                val interaction = remember { MutableInteractionSource() }
                 Row(
                     modifier = Modifier
-                        .weight(if (selected) 1.5f else 1f)
+                        .weight(weight)
                         .height(54.dp)
+                        .pressScale(interaction, 0.94f)
                         .clip(CircleShape)
-                        .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                        .selectable(selected = selected, role = Role.Tab, onClick = { if (!selected) onSelect(tab.route) }),
+                        .background(pill)
+                        .selectable(
+                            selected = selected,
+                            interactionSource = interaction,
+                            indication = null,
+                            role = Role.Tab,
+                            onClick = { if (!selected) onSelect(tab.route) },
+                        ),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         if (selected) tab.selectedIcon else tab.icon,
                         contentDescription = if (selected) null else label,
-                        tint = if (selected) Color.White else extra.navContent,
-                        modifier = Modifier.size(22.dp),
+                        tint = tint,
+                        modifier = Modifier.size(22.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale },
                     )
-                    if (selected) {
-                        Spacer(Modifier.width(6.dp))
-                        Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1)
+                    AnimatedVisibility(
+                        visible = selected,
+                        enter = expandHorizontally(Motion.spatial()) + fadeIn(tween(160, delayMillis = 60)),
+                        exit = shrinkHorizontally(Motion.spatial()) + fadeOut(tween(90)),
+                    ) {
+                        Row {
+                            Spacer(Modifier.width(6.dp))
+                            Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1, softWrap = false)
+                        }
                     }
                 }
             }

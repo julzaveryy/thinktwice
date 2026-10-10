@@ -1,5 +1,19 @@
 package com.miqu.thinktwice.ui.quiz
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.material3.ripple
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateColorAsState
+import com.miqu.thinktwice.ui.theme.pressScale
+import com.miqu.thinktwice.ui.theme.Motion
 import com.miqu.thinktwice.ui.common.quizTitle
 import com.miqu.thinktwice.ui.common.labelRes
 import com.miqu.thinktwice.R
@@ -176,7 +190,8 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
         AnimatedContent(
             targetState = ui.index,
             transitionSpec = {
-                (slideInHorizontally { it / 4 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 4 } + fadeOut())
+                // Shared-axis: the old question leaves before the new one arrives, so text never overlaps.
+                Motion.sharedAxisIn(forward = true) togetherWith Motion.sharedAxisOut(forward = true)
             },
             label = "question",
             modifier = Modifier.weight(1f),
@@ -196,19 +211,27 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
         // Action
         Box(Modifier.padding(horizontal = ScreenGutter, vertical = 16.dp)) {
             val extra = AppTheme.extra
+            // One button whose label and colour morph between states (instead of swapping buttons).
+            val label: String
+            val action: () -> Unit
+            var enabled = true
+            var dark = false
+            var arrow = false
             when {
-                ui.timeUp -> PrimaryButton(stringResource(R.string.times_up), onClick = vm::finish)
-                ui.checked && ui.isOver -> PrimaryButton(stringResource(R.string.see_results), onClick = vm::next, trailingIcon = Icons.AutoMirrored.Rounded.ArrowForward)
-                ui.checked -> PrimaryButton(
-                    stringResource(R.string.next_question),
-                    onClick = vm::next,
-                    containerColor = extra.featureCard,
-                    contentColor = extra.onFeatureCard,
-                    trailingIcon = Icons.AutoMirrored.Rounded.ArrowForward,
-                )
-                ui.picked != null -> PrimaryButton(stringResource(R.string.check_answer), onClick = vm::check)
-                else -> PrimaryButton(stringResource(R.string.pick_answer), onClick = {}, enabled = false)
+                ui.timeUp -> { label = stringResource(R.string.times_up); action = vm::finish }
+                ui.checked && ui.isOver -> { label = stringResource(R.string.see_results); action = vm::next; arrow = true }
+                ui.checked -> { label = stringResource(R.string.next_question); action = vm::next; dark = true; arrow = true }
+                ui.picked != null -> { label = stringResource(R.string.check_answer); action = vm::check }
+                else -> { label = stringResource(R.string.pick_answer); action = {}; enabled = false }
             }
+            PrimaryButton(
+                text = label,
+                onClick = action,
+                enabled = enabled,
+                containerColor = if (dark) extra.featureCard else MaterialTheme.colorScheme.primary,
+                contentColor = if (dark) extra.onFeatureCard else MaterialTheme.colorScheme.onPrimary,
+                trailingIcon = if (arrow) Icons.AutoMirrored.Rounded.ArrowForward else null,
+            )
         }
     }
 
@@ -337,7 +360,11 @@ private fun QuestionBody(
                 )
             }
         }
-        AnimatedVisibility(visible = ui.checked && isCurrent, enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(
+            visible = ui.checked && isCurrent,
+            enter = slideInVertically(Motion.spatial()) { it / 3 } + fadeIn(tween(200)),
+            exit = fadeOut(tween(90)),
+        ) {
             val correct = ui.lastAnswerCorrect
             AppCard(
                 modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
@@ -371,42 +398,108 @@ private enum class AnswerState { Idle, Selected, Correct, Wrong, Dimmed }
 private fun AnswerOption(letter: String, text: String, state: AnswerState, onClick: () -> Unit) {
     val extra = AppTheme.extra
     val scheme = MaterialTheme.colorScheme
-    val (container, border, badge) = when (state) {
-        AnswerState.Idle, AnswerState.Dimmed -> Triple(scheme.surface, BorderStroke(1.dp, scheme.outlineVariant), scheme.surfaceVariant)
-        AnswerState.Selected -> Triple(scheme.primaryContainer, BorderStroke(2.dp, scheme.primary), scheme.primary)
-        AnswerState.Correct -> Triple(extra.successContainer, BorderStroke(2.dp, extra.success), extra.success)
-        AnswerState.Wrong -> Triple(extra.dangerContainer, BorderStroke(2.dp, extra.danger), extra.danger)
-    }
+    val isReveal = state == AnswerState.Correct || state == AnswerState.Wrong
+    val container by animateColorAsState(
+        when (state) {
+            AnswerState.Idle, AnswerState.Dimmed -> scheme.surface
+            AnswerState.Selected -> scheme.primaryContainer
+            AnswerState.Correct -> extra.successContainer
+            AnswerState.Wrong -> extra.dangerContainer
+        },
+        Motion.effects(), label = "answerBg",
+    )
+    val borderColor by animateColorAsState(
+        when (state) {
+            AnswerState.Idle, AnswerState.Dimmed -> scheme.outlineVariant
+            AnswerState.Selected -> scheme.primary
+            AnswerState.Correct -> extra.success
+            AnswerState.Wrong -> extra.danger
+        },
+        Motion.effects(), label = "answerBorder",
+    )
+    val borderWidth by animateDpAsState(if (state == AnswerState.Idle || state == AnswerState.Dimmed) 1.dp else 2.dp, Motion.effects(), label = "answerBorderW")
+    val badge by animateColorAsState(
+        when (state) {
+            AnswerState.Idle, AnswerState.Dimmed -> scheme.surfaceVariant
+            AnswerState.Selected -> scheme.primary
+            AnswerState.Correct -> extra.success
+            AnswerState.Wrong -> extra.danger
+        },
+        Motion.effects(), label = "answerBadge",
+    )
+    val dim by animateFloatAsState(if (state == AnswerState.Dimmed) 0.5f else 1f, Motion.effects(), label = "answerDim")
     val badgeContent = if (state == AnswerState.Idle || state == AnswerState.Dimmed) scheme.onSurface else Color.White
+
+    // Correct answers pop, wrong answers give a short shake.
+    val pop = remember { Animatable(1f) }
+    val shake = remember { Animatable(0f) }
+    LaunchedEffect(state) {
+        when (state) {
+            AnswerState.Correct -> {
+                pop.animateTo(1.035f, spring(dampingRatio = 0.5f, stiffness = 900f))
+                pop.animateTo(1f, Motion.bouncy())
+            }
+            AnswerState.Wrong -> shake.animateTo(
+                0f,
+                keyframes {
+                    durationMillis = 380
+                    -10f at 50; 9f at 110; -6f at 180; 4f at 250; -2f at 310
+                },
+            )
+            else -> Unit
+        }
+    }
+    val interaction = remember { MutableInteractionSource() }
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = container,
-        border = border,
+        border = BorderStroke(borderWidth, borderColor),
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 60.dp)
-            .alpha(if (state == AnswerState.Dimmed) 0.55f else 1f)
+            .graphicsLayer {
+                alpha = dim
+                scaleX = pop.value
+                scaleY = pop.value
+                translationX = shake.value * density
+            }
+            .pressScale(interaction)
             .selectable(
                 selected = state == AnswerState.Selected,
                 enabled = state == AnswerState.Idle || state == AnswerState.Selected,
+                interactionSource = interaction,
+                indication = ripple(),
                 role = Role.RadioButton,
                 onClick = onClick,
             ),
     ) {
         Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(32.dp).background(badge, CircleShape), contentAlignment = Alignment.Center) {
-                when (state) {
-                    AnswerState.Correct -> Icon(Icons.Rounded.Check, null, tint = badgeContent, modifier = Modifier.size(18.dp))
-                    AnswerState.Wrong -> Icon(Icons.Rounded.Close, null, tint = badgeContent, modifier = Modifier.size(18.dp))
-                    else -> Text(letter, style = MaterialTheme.typography.labelLarge, color = badgeContent)
+                AnimatedContent(
+                    targetState = state,
+                    transitionSpec = { (scaleIn(Motion.bouncy(), initialScale = 0.4f) + fadeIn()) togetherWith fadeOut(tween(80)) },
+                    contentKey = { it == AnswerState.Correct || it == AnswerState.Wrong },
+                    label = "badge",
+                ) { s ->
+                    when (s) {
+                        AnswerState.Correct -> Icon(Icons.Rounded.Check, null, tint = badgeContent, modifier = Modifier.size(18.dp))
+                        AnswerState.Wrong -> Icon(Icons.Rounded.Close, null, tint = badgeContent, modifier = Modifier.size(18.dp))
+                        else -> Text(letter, style = MaterialTheme.typography.labelLarge, color = badgeContent)
+                    }
                 }
             }
             Spacer(Modifier.width(12.dp))
             Text(text, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, modifier = Modifier.weight(1f))
-            when (state) {
-                AnswerState.Correct -> Text(stringResource(R.string.correct), style = MaterialTheme.typography.labelLarge, color = extra.success)
-                AnswerState.Wrong -> Text(stringResource(R.string.your_answer), style = MaterialTheme.typography.labelLarge, color = extra.danger)
-                else -> Unit
+            AnimatedVisibility(
+                visible = isReveal,
+                enter = fadeIn(tween(180, delayMillis = 80)) + slideInHorizontally(Motion.spatial()) { it / 2 },
+                exit = fadeOut(tween(80)),
+            ) {
+                Text(
+                    stringResource(if (state == AnswerState.Correct) R.string.correct else R.string.your_answer),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (state == AnswerState.Correct) extra.success else extra.danger,
+                )
             }
         }
     }

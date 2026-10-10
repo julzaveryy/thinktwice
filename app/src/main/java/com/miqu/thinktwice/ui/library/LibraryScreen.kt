@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.library
 
+import com.miqu.thinktwice.ui.theme.Motion
 import androidx.annotation.StringRes
 import com.miqu.thinktwice.R
 import androidx.compose.ui.res.stringResource
@@ -193,8 +194,11 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
                 }
             }
         }
-        items(list, key = { "${tab}_${it.id}" }) { topic ->
-            TopicTile(topic, onClick = { onStartTopic(topic.id) })
+        items(list, key = { it.id }) { topic ->
+            // Filtering and sorting move tiles to their new spot instead of jumping.
+            Box(Modifier.animateItem(fadeInSpec = Motion.effects(), placementSpec = Motion.spatial(), fadeOutSpec = Motion.effects())) {
+                TopicTile(topic, onClick = { onStartTopic(topic.id) })
+            }
         }
     }
 }

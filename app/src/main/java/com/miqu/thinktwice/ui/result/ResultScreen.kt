@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.result
 
+import com.miqu.thinktwice.ui.theme.rememberCountUp
 import com.miqu.thinktwice.ui.common.levelName
 import com.miqu.thinktwice.ui.common.quizTitle
 import com.miqu.thinktwice.ui.common.labelRes
@@ -170,7 +171,7 @@ fun ResultScreen(onDone: () -> Unit, onPlayAgain: (QuizKind, String?) -> Unit) {
                         Row(verticalAlignment = Alignment.Bottom) {
                             Column(Modifier.weight(1f)) {
                                 Overline(stringResource(R.string.xp_earned), color = extra.featureMuted)
-                                Text(stringResource(R.string.plus_xp, state.xp + state.bonus), style = MaterialTheme.typography.headlineMedium, color = extra.amber)
+                                Text(stringResource(R.string.plus_xp, rememberCountUp(state.xp + state.bonus)), style = MaterialTheme.typography.headlineMedium, color = extra.amber)
                             }
                             if (state.bonus > 0) {
                                 Text(stringResource(R.string.bonus_incl, state.bonus), style = MaterialTheme.typography.bodySmall, color = extra.featureMuted)
@@ -230,8 +231,8 @@ private fun ScoreRing(accuracy: Int, correct: Int, total: Int) {
             drawArc(color, -90f, 360f * sweep.value, useCenter = false, style = stroke)
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(stringResource(R.string.score, correct, total), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
-            Text(stringResource(R.string.pct_correct, accuracy), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.score, rememberCountUp(correct), total), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.pct_correct, rememberCountUp(accuracy)), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
