@@ -141,7 +141,7 @@
     <string name="check_answer">Check answer</string>
     <string name="pick_answer">Pick an answer</string>
     <string name="leave_title">Leave this quiz?</string>
-    <string name="leave_open">End now to keep your score, or leave without saving it.</string>
+    <string name="leave_open">Your score so far will be saved.</string>
     <string name="leave_round">Answers from this round won’t be saved.</string>
     <string name="end_save">End and save score</string>
     <string name="leave">Leave without saving</string>
@@ -254,4 +254,6 @@
     <string name="leave_answered">answered</string>
     <string name="leave_correct">correct</string>
     <string name="leave_xp">this round</string>
+    <string name="leave_short">Leave</string>
+    <string name="end_short">End</string>
 </resources>

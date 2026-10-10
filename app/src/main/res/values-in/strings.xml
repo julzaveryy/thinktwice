@@ -140,7 +140,7 @@
     <string name="check_answer">Periksa jawaban</string>
     <string name="pick_answer">Pilih jawaban</string>
     <string name="leave_title">Keluar dari kuis?</string>
-    <string name="leave_open">Akhiri sekarang untuk menyimpan skormu, atau keluar tanpa menyimpan.</string>
+    <string name="leave_open">Skormu sejauh ini akan disimpan.</string>
     <string name="leave_round">Jawaban di ronde ini tidak akan disimpan.</string>
     <string name="end_save">Akhiri dan simpan skor</string>
     <string name="leave">Keluar tanpa menyimpan</string>
@@ -252,4 +252,6 @@
     <string name="leave_answered">terjawab</string>
     <string name="leave_correct">benar</string>
     <string name="leave_xp">ronde ini</string>
+    <string name="leave_short">Keluar</string>
+    <string name="end_short">Akhiri</string>
 </resources>

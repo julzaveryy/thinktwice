@@ -245,10 +245,6 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
     LeaveSheet(
         visible = confirmExit,
         openEnded = plan.isOpenEnded,
-        answered = ui.selections.size,
-        total = if (plan.isOpenEnded) null else ui.questions.size,
-        correct = ui.correctCount,
-        xp = ui.xp,
         onKeepPlaying = { confirmExit = false },
         onLeave = { confirmExit = false; onClose() },
         onEndAndSave = { confirmExit = false; vm.finish() },
@@ -256,22 +252,17 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
 }
 
 /**
- * Leave confirmation: a card floating in the middle of the screen. Drawn inside the quiz
+ * Leave confirmation: a small card floating in the middle of the screen. Drawn inside the quiz
  * screen (not a separate dialog window) so it follows the app language and the app's motion.
  */
 @Composable
 private fun LeaveSheet(
     visible: Boolean,
     openEnded: Boolean,
-    answered: Int,
-    total: Int?,
-    correct: Int,
-    xp: Int,
     onKeepPlaying: () -> Unit,
     onLeave: () -> Unit,
     onEndAndSave: () -> Unit,
 ) {
-    val extra = AppTheme.extra
     BackHandler(enabled = visible, onBack = onKeepPlaying)
     Box(Modifier.fillMaxSize()) {
         AnimatedVisibility(visible = visible, enter = fadeIn(tween(180)), exit = fadeOut(tween(160))) {
@@ -284,79 +275,46 @@ private fun LeaveSheet(
         }
         AnimatedVisibility(
             visible = visible,
-            modifier = Modifier.align(Alignment.Center).padding(horizontal = 24.dp),
-            // Pops out from the middle with a slight spring, shrinks back when dismissed.
-            enter = scaleIn(Motion.bouncy(), initialScale = 0.88f) + fadeIn(tween(140)),
-            exit = scaleOut(Motion.effects(), targetScale = 0.94f) + fadeOut(tween(120)),
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 28.dp),
+            enter = scaleIn(Motion.bouncy(), initialScale = 0.9f) + fadeIn(tween(140)),
+            exit = scaleOut(Motion.effects(), targetScale = 0.95f) + fadeOut(tween(120)),
         ) {
             Surface(
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 24.dp,
-                modifier = Modifier.fillMaxWidth().widthIn(max = 420.dp),
+                modifier = Modifier.fillMaxWidth().widthIn(max = 400.dp),
             ) {
-                Column(
-                    Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Box(
-                        Modifier.size(64.dp).clip(CircleShape).background(extra.amberContainer),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(Icons.AutoMirrored.Rounded.ExitToApp, null, tint = extra.onAmberContainer, modifier = Modifier.size(30.dp))
-                    }
-                    Spacer(Modifier.height(14.dp))
+                Column(Modifier.padding(start = 22.dp, end = 22.dp, top = 24.dp, bottom = 18.dp)) {
                     Text(
                         stringResource(R.string.leave_title),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         stringResource(if (openEnded) R.string.leave_open else R.string.leave_round),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
                     )
-                    Spacer(Modifier.height(18.dp))
-                    // What's at stake, at a glance.
-                    Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(vertical = 14.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                    ) {
-                        LeaveStat(if (total != null) stringResource(R.string.score, answered, total) else answered.toString(), stringResource(R.string.leave_answered))
-                        LeaveStat(correct.toString(), stringResource(R.string.leave_correct))
-                        LeaveStat(stringResource(R.string.plus_xp, xp), stringResource(R.string.leave_xp))
-                    }
-                    Spacer(Modifier.height(20.dp))
-                    if (openEnded) {
-                        PrimaryButton(stringResource(R.string.end_save), onClick = onEndAndSave)
-                        Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(22.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        PrimaryButton(
+                            stringResource(if (openEnded) R.string.end_short else R.string.leave_short),
+                            onClick = if (openEnded) onEndAndSave else onLeave,
+                            modifier = Modifier.weight(1f),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = if (openEnded) MaterialTheme.colorScheme.onSurface else AppTheme.extra.danger,
+                        )
                         PrimaryButton(
                             stringResource(R.string.keep_playing),
                             onClick = onKeepPlaying,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
                         )
-                    } else {
-                        PrimaryButton(stringResource(R.string.keep_playing), onClick = onKeepPlaying)
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    TextButton(onClick = onLeave, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                        Text(stringResource(R.string.leave), style = MaterialTheme.typography.titleSmall, color = extra.danger)
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun LeaveStat(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
