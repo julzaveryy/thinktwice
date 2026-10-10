@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Topic icon: history. Duotone line icon; tinted at runtime (the soft fill keeps its alpha). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.22" android:pathData="M3.8 9 12 4l8.2 5Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M3.8 9 12 4l8.2 5ZM5.5 9v8.5M9.8 9v8.5M14.2 9v8.5M18.5 9v8.5M3.5 20.5h17M4.5 17.5h15" />
+</vector>

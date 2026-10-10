@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Topic icon: animals. Duotone line icon; tinted at runtime (the soft fill keeps its alpha). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.22" android:pathData="M12 12.2c-2.6 0-5 2.6-5 5.1 0 1.6 1.2 2.4 2.6 2.4 1 0 1.6-.5 2.4-.5s1.4.5 2.4.5c1.4 0 2.6-.8 2.6-2.4 0-2.5-2.4-5.1-5-5.1Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M12 12.2c-2.6 0-5 2.6-5 5.1 0 1.6 1.2 2.4 2.6 2.4 1 0 1.6-.5 2.4-.5s1.4.5 2.4.5c1.4 0 2.6-.8 2.6-2.4 0-2.5-2.4-5.1-5-5.1ZM9.4 4.3c1 0 1.8 1.2 1.8 2.6S10.4 9.5 9.4 9.5 7.6 8.3 7.6 6.9s.8-2.6 1.8-2.6ZM14.6 4.3c1 0 1.8 1.2 1.8 2.6s-.8 2.6-1.8 2.6-1.8-1.2-1.8-2.6.8-2.6 1.8-2.6ZM5 9.2c.9-.3 2 .5 2.4 1.7s.1 2.4-.8 2.7-2-.5-2.4-1.7-.1-2.4.8-2.7ZM19 9.2c.9.3 1.2 1.5.8 2.7s-1.5 2-2.4 1.7-1.2-1.5-.8-2.7 1.5-2 2.4-1.7Z" />
+</vector>

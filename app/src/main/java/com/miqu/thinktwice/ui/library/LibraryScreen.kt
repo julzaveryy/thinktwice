@@ -68,7 +68,7 @@ import com.miqu.thinktwice.ui.components.EmptyMessage
 import com.miqu.thinktwice.ui.components.Overline
 import com.miqu.thinktwice.ui.components.ScreenGutter
 import com.miqu.thinktwice.ui.components.SegmentedTabs
-import com.miqu.thinktwice.ui.components.topicArt
+import com.miqu.thinktwice.ui.components.TopicIcon
 import com.miqu.thinktwice.ui.navigation.BottomBarClearance
 import com.miqu.thinktwice.ui.theme.AppTheme
 import com.miqu.thinktwice.ui.theme.tintFor
@@ -251,10 +251,10 @@ private fun TopicTile(topic: LibraryTopic, onClick: () -> Unit) {
     ) {
         Column(Modifier.padding(10.dp)) {
             Box(
-                Modifier.fillMaxWidth().aspectRatio(1.3f).clip(RoundedCornerShape(18.dp)).background(tint.container()),
+                Modifier.fillMaxWidth().aspectRatio(1.6f).clip(RoundedCornerShape(18.dp)).background(tint.container()),
                 contentAlignment = Alignment.Center,
             ) {
-                ArtImage(topicArt(topic.id), Modifier.fillMaxSize().padding(10.dp))
+                TopicIcon(topic.id, Modifier.size(52.dp))
                 if (topic.accuracy != null) {
                     Surface(
                         shape = CircleShape,

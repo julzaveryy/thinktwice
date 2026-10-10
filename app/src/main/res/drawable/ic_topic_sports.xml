@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Topic icon: sports. Duotone line icon; tinted at runtime (the soft fill keeps its alpha). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.22" android:pathData="M12 7.6 15.6 10.2 14.2 14.4H9.8L8.4 10.2Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M3.5,12a8.5,8.5 0 1,0 17.0,0a8.5,8.5 0 1,0 -17.0,0ZM12 7.6 15.6 10.2 14.2 14.4H9.8L8.4 10.2ZM12 7.6V3.5M15.6 10.2l4.2-1.4M14.2 14.4l2.6 3.6M9.8 14.4 7.2 18M8.4 10.2 4.2 8.8" />
+</vector>

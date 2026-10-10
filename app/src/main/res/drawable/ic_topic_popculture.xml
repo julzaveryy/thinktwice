@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Topic icon: popculture. Duotone line icon; tinted at runtime (the soft fill keeps its alpha). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.22" android:pathData="M5.7,6.5h12.6a2.2,2.2 0 0 1 2.2,2.2v7.6a2.2,2.2 0 0 1 -2.2,2.2h-12.6a2.2,2.2 0 0 1 -2.2,-2.2v-7.6a2.2,2.2 0 0 1 2.2,-2.2Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M5.7,6.5h12.6a2.2,2.2 0 0 1 2.2,2.2v7.6a2.2,2.2 0 0 1 -2.2,2.2h-12.6a2.2,2.2 0 0 1 -2.2,-2.2v-7.6a2.2,2.2 0 0 1 2.2,-2.2ZM8.5 3 12 6.5 15.5 3M8.5 21h7M12 9.4l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3Z" />
+</vector>

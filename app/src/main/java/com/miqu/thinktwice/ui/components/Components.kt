@@ -1,5 +1,7 @@
 package com.miqu.thinktwice.ui.components
 
+import com.miqu.thinktwice.ui.theme.tintFor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Animatable
@@ -400,23 +402,40 @@ fun ArtImage(@DrawableRes res: Int, modifier: Modifier = Modifier, contentScale:
 }
 
 @DrawableRes
-fun topicArt(categoryId: String): Int = when (categoryId) {
-    "science" -> R.drawable.topic_science
-    "world", "landmarks" -> R.drawable.topic_world
-    "movies", "popculture", "animation" -> R.drawable.topic_movies
-    "gaming", "tech" -> R.drawable.topic_tech
-    "superheroes", "myths" -> R.drawable.topic_myths
-    "music", "popmusic" -> R.drawable.topic_music
-    "history" -> R.drawable.topic_history
-    "brain" -> R.drawable.topic_brain
-    "flags" -> R.drawable.topic_flags
-    "animals" -> R.drawable.topic_animals
-    "sports" -> R.drawable.topic_sports
-    "food" -> R.drawable.topic_food
-    "space" -> R.drawable.topic_space
-    "nature" -> R.drawable.topic_nature
-    "art" -> R.drawable.topic_art
-    else -> R.drawable.topic_quick
+fun topicIcon(categoryId: String): Int = when (categoryId) {
+    "science" -> R.drawable.ic_topic_science
+    "world" -> R.drawable.ic_topic_world
+    "movies" -> R.drawable.ic_topic_movies
+    "history" -> R.drawable.ic_topic_history
+    "brain" -> R.drawable.ic_topic_brain
+    "flags" -> R.drawable.ic_topic_flags
+    "animals" -> R.drawable.ic_topic_animals
+    "sports" -> R.drawable.ic_topic_sports
+    "tech" -> R.drawable.ic_topic_tech
+    "food" -> R.drawable.ic_topic_food
+    "space" -> R.drawable.ic_topic_space
+    "music" -> R.drawable.ic_topic_music
+    "nature" -> R.drawable.ic_topic_nature
+    "myths" -> R.drawable.ic_topic_myths
+    "art" -> R.drawable.ic_topic_art
+    "landmarks" -> R.drawable.ic_topic_landmarks
+    "popculture" -> R.drawable.ic_topic_popculture
+    "gaming" -> R.drawable.ic_topic_gaming
+    "animation" -> R.drawable.ic_topic_animation
+    "superheroes" -> R.drawable.ic_topic_superheroes
+    "popmusic" -> R.drawable.ic_topic_popmusic
+    else -> R.drawable.ic_topic_quick
+}
+
+/** A topic's duotone icon, tinted with the topic's colour. */
+@Composable
+fun TopicIcon(categoryId: String, modifier: Modifier = Modifier) {
+    Icon(
+        painter = painterResource(topicIcon(categoryId)),
+        contentDescription = null,
+        tint = tintFor(categoryId).content(),
+        modifier = modifier,
+    )
 }
 
 @DrawableRes

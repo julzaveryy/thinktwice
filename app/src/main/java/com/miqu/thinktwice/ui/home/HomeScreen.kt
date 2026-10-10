@@ -66,7 +66,7 @@ import com.miqu.thinktwice.ui.components.ScreenGutter
 import com.miqu.thinktwice.ui.components.SectionHeader
 import com.miqu.thinktwice.ui.components.SegmentedProgress
 import com.miqu.thinktwice.ui.components.StreakChip
-import com.miqu.thinktwice.ui.components.topicArt
+import com.miqu.thinktwice.ui.components.TopicIcon
 import com.miqu.thinktwice.ui.navigation.BottomBarClearance
 import com.miqu.thinktwice.ui.theme.AppTheme
 import com.miqu.thinktwice.ui.theme.Tint
@@ -287,7 +287,7 @@ fun TopicRow(topic: TopicCard, onClick: () -> Unit) {
             Box(
                 Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)).background(tint.container()),
                 contentAlignment = Alignment.Center,
-            ) { ArtImage(topicArt(topic.id), Modifier.size(46.dp)) }
+            ) { TopicIcon(topic.id, Modifier.size(28.dp)) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(topic.title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)

@@ -75,7 +75,7 @@ import com.miqu.thinktwice.ui.components.Overline
 import com.miqu.thinktwice.ui.components.PrimaryButton
 import com.miqu.thinktwice.ui.components.ScreenGutter
 import com.miqu.thinktwice.ui.components.SegmentedTabs
-import com.miqu.thinktwice.ui.components.topicArt
+import com.miqu.thinktwice.ui.components.TopicIcon
 import com.miqu.thinktwice.ui.profile.DetailTopBar
 import com.miqu.thinktwice.ui.theme.AppTheme
 import com.miqu.thinktwice.ui.theme.tintFor
@@ -316,7 +316,7 @@ fun TopicPicker(
                     Box(
                         Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tint.container()),
                         contentAlignment = Alignment.Center,
-                    ) { ArtImage(topicArt(category.id), Modifier.size(32.dp)) }
+                    ) { TopicIcon(category.id, Modifier.size(22.dp)) }
                     Spacer(Modifier.width(10.dp))
                     Text(
                         category.title,

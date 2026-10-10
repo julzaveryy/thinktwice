@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Topic icon: science. Duotone line icon; tinted at runtime (the soft fill keeps its alpha). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.22" android:pathData="M9.5 10.2 5.3 17.6A1.6 1.6 0 0 0 6.7 20h10.6a1.6 1.6 0 0 0 1.4-2.4l-4.2-7.4Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M9.5 3.5h5M10 3.5v6.7L5.3 17.6A1.6 1.6 0 0 0 6.7 20h10.6a1.6 1.6 0 0 0 1.4-2.4L14 10.2V3.5M7.6 14h8.8" />
+</vector>
