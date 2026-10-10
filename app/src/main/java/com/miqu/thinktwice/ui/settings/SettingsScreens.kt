@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.settings
 
+import com.miqu.thinktwice.ui.common.KeepAppLanguage
 import com.miqu.thinktwice.data.prefs.AppLanguage
 import com.miqu.thinktwice.R
 import androidx.compose.ui.res.stringResource
@@ -202,14 +203,14 @@ fun SettingsScreen(onBack: () -> Unit, onEditProfile: () -> Unit, onEditTopics: 
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            title = { Text(stringResource(R.string.reset_title)) },
-            text = { Text(stringResource(R.string.reset_body)) },
+            title = { KeepAppLanguage { Text(stringResource(R.string.reset_title)) } },
+            text = { KeepAppLanguage { Text(stringResource(R.string.reset_body)) } },
             confirmButton = {
                 TextButton(onClick = { confirmReset = false; vm.resetProgress() }) {
-                    Text(stringResource(R.string.reset), color = AppTheme.extra.danger)
+                    KeepAppLanguage { Text(stringResource(R.string.reset), color = AppTheme.extra.danger) }
                 }
             },
-            dismissButton = { TextButton(onClick = { confirmReset = false }) { Text(stringResource(R.string.cancel)) } },
+            dismissButton = { TextButton(onClick = { confirmReset = false }) { KeepAppLanguage { Text(stringResource(R.string.cancel)) } } },
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.library
 
+import com.miqu.thinktwice.ui.common.KeepAppLanguage
 import com.miqu.thinktwice.ui.theme.Motion
 import androidx.annotation.StringRes
 import com.miqu.thinktwice.R
@@ -157,6 +158,7 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
                 Box {
                     CircleIconButton(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.sort_topics), onClick = { sortMenu = true }, size = 52.dp)
                     DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
+                        KeepAppLanguage {
                         LibrarySort.entries.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(stringResource(option.label), style = MaterialTheme.typography.bodyLarge) },
@@ -166,6 +168,7 @@ fun LibraryScreen(onStartTopic: (String) -> Unit) {
                                 },
                             )
                         }
+                    }
                     }
                 }
             }

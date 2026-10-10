@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.activity
 
+import com.miqu.thinktwice.ui.common.KeepAppLanguage
 import com.miqu.thinktwice.ui.theme.Motion
 import com.miqu.thinktwice.ui.common.quizTitle
 import com.miqu.thinktwice.ui.common.labelRes
@@ -150,6 +151,7 @@ fun ActivityScreen(
                 Box {
                     CircleIconButton(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.sort_history), onClick = { sortMenu = true }, size = 48.dp)
                     DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
+                        KeepAppLanguage {
                         HistorySort.entries.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(stringResource(option.label), style = MaterialTheme.typography.bodyLarge) },
@@ -157,6 +159,7 @@ fun ActivityScreen(
                                 trailingIcon = { if (option == sort) Icon(Icons.Rounded.Check, null) },
                             )
                         }
+                    }
                     }
                 }
             }

@@ -1,5 +1,10 @@
 package com.miqu.thinktwice.ui.quiz
 
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material.icons.automirrored.rounded.ExitToApp
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.ripple
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -235,31 +240,123 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
         }
     }
 
-    if (confirmExit) {
-        AlertDialog(
-            onDismissRequest = { confirmExit = false },
-            title = { Text(stringResource(R.string.leave_title)) },
-            text = {
-                Text(
-                    if (plan.isOpenEnded) stringResource(R.string.leave_open)
-                    else stringResource(R.string.leave_round),
-                )
-            },
-            confirmButton = {
-                if (plan.isOpenEnded) {
-                    TextButton(onClick = { confirmExit = false; vm.finish() }) { Text(stringResource(R.string.end_save)) }
-                } else {
-                    TextButton(onClick = { confirmExit = false; onClose() }) { Text(stringResource(R.string.leave)) }
+    LeaveSheet(
+        visible = confirmExit,
+        openEnded = plan.isOpenEnded,
+        answered = ui.selections.size,
+        total = if (plan.isOpenEnded) null else ui.questions.size,
+        correct = ui.correctCount,
+        xp = ui.xp,
+        onKeepPlaying = { confirmExit = false },
+        onLeave = { confirmExit = false; onClose() },
+        onEndAndSave = { confirmExit = false; vm.finish() },
+    )
+}
+
+/**
+ * Leave confirmation drawn inside the quiz screen (not a separate dialog window), so it
+ * follows the app language and slides up as a sheet with the app's motion.
+ */
+@Composable
+private fun LeaveSheet(
+    visible: Boolean,
+    openEnded: Boolean,
+    answered: Int,
+    total: Int?,
+    correct: Int,
+    xp: Int,
+    onKeepPlaying: () -> Unit,
+    onLeave: () -> Unit,
+    onEndAndSave: () -> Unit,
+) {
+    val extra = AppTheme.extra
+    BackHandler(enabled = visible, onBack = onKeepPlaying)
+    Box(Modifier.fillMaxSize()) {
+        AnimatedVisibility(visible = visible, enter = fadeIn(tween(180)), exit = fadeOut(tween(160))) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.45f))
+                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onKeepPlaying),
+            )
+        }
+        AnimatedVisibility(
+            visible = visible,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = slideInVertically(Motion.spatial()) { it } + fadeIn(tween(120)),
+            exit = slideOutVertically(Motion.spatial()) { it } + fadeOut(tween(160, delayMillis = 60)),
+        ) {
+            Surface(
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(
+                    Modifier
+                        .navigationBarsPadding()
+                        .padding(start = ScreenGutter, end = ScreenGutter, top = 12.dp, bottom = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(Modifier.size(width = 40.dp, height = 4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.outlineVariant))
+                    Spacer(Modifier.height(22.dp))
+                    Box(
+                        Modifier.size(64.dp).clip(CircleShape).background(extra.amberContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.AutoMirrored.Rounded.ExitToApp, null, tint = extra.onAmberContainer, modifier = Modifier.size(30.dp))
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        stringResource(R.string.leave_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(if (openEnded) R.string.leave_open else R.string.leave_round),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(18.dp))
+                    // What's at stake, at a glance.
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                    ) {
+                        LeaveStat(if (total != null) stringResource(R.string.score, answered, total) else answered.toString(), stringResource(R.string.leave_answered))
+                        LeaveStat(correct.toString(), stringResource(R.string.leave_correct))
+                        LeaveStat(stringResource(R.string.plus_xp, xp), stringResource(R.string.leave_xp))
+                    }
+                    Spacer(Modifier.height(20.dp))
+                    if (openEnded) {
+                        PrimaryButton(stringResource(R.string.end_save), onClick = onEndAndSave)
+                        Spacer(Modifier.height(10.dp))
+                        PrimaryButton(
+                            stringResource(R.string.keep_playing),
+                            onClick = onKeepPlaying,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        )
+                    } else {
+                        PrimaryButton(stringResource(R.string.keep_playing), onClick = onKeepPlaying)
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    TextButton(onClick = onLeave, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.leave), style = MaterialTheme.typography.titleSmall, color = extra.danger)
+                    }
                 }
-            },
-            dismissButton = {
-                if (plan.isOpenEnded) {
-                    TextButton(onClick = { confirmExit = false; onClose() }) { Text(stringResource(R.string.leave)) }
-                } else {
-                    TextButton(onClick = { confirmExit = false }) { Text(stringResource(R.string.keep_playing)) }
-                }
-            },
-        )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LeaveStat(value: String, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.miqu.thinktwice.ui.common
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
@@ -24,6 +25,16 @@ fun Context.withLanguage(tag: String): Context {
     }
 }
 
+/** The app language tag, so popups and dialogs (which get a fresh Context) can re-apply it. */
+val LocalAppLanguage = staticCompositionLocalOf<String?> { null }
+
+/** Re-applies the app language inside a popup / dialog window. */
+@Composable
+fun KeepAppLanguage(content: @Composable () -> Unit) {
+    val tag = LocalAppLanguage.current
+    if (tag == null) content() else ProvideAppLanguage(tag, content)
+}
+
 /** Makes every stringResource() below use the app's chosen language. */
 @Composable
 fun ProvideAppLanguage(tag: String, content: @Composable () -> Unit) {
@@ -33,6 +44,7 @@ fun ProvideAppLanguage(tag: String, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalContext provides localized,
         LocalConfiguration provides localized.resources.configuration,
+        LocalAppLanguage provides tag,
         content = content,
     )
 }

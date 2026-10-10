@@ -139,11 +139,11 @@
     <string name="next_question">Soal berikutnya</string>
     <string name="check_answer">Periksa jawaban</string>
     <string name="pick_answer">Pilih jawaban</string>
-    <string name="leave_title">Tinggalkan kuis ini?</string>
+    <string name="leave_title">Keluar dari kuis?</string>
     <string name="leave_open">Akhiri sekarang untuk menyimpan skormu, atau keluar tanpa menyimpan.</string>
-    <string name="leave_round">Jawaban di ronde ini tidak akan disimpan.</string>
-    <string name="end_save">Akhiri &amp; simpan</string>
-    <string name="leave">Keluar</string>
+    <string name="leave_round">Kamu bisa kembali kapan saja, tapi jawaban di ronde ini tidak akan disimpan.</string>
+    <string name="end_save">Akhiri dan simpan skor</string>
+    <string name="leave">Keluar tanpa menyimpan</string>
     <string name="keep_playing">Lanjut main</string>
     <string name="lives_left">Sisa %1$d dari %2$d nyawa</string>
     <string name="seconds_short">%1$dd</string>
@@ -249,4 +249,7 @@
     <string name="badge_quiz_champion_desc">Selesaikan 20 kuis.</string>
     <string name="badge_master_mind">Otak Jenius</string>
     <string name="badge_master_mind_desc">Jawab 100 soal dengan benar.</string>
+    <string name="leave_answered">terjawab</string>
+    <string name="leave_correct">benar</string>
+    <string name="leave_xp">ronde ini</string>
 </resources>
