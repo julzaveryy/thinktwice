@@ -88,7 +88,7 @@ import com.miqu.thinktwice.ui.components.PillButton
 import com.miqu.thinktwice.ui.components.PrimaryButton
 import com.miqu.thinktwice.ui.components.ScreenGutter
 import com.miqu.thinktwice.ui.components.SectionHeader
-import com.miqu.thinktwice.ui.components.badgeArt
+import com.miqu.thinktwice.ui.components.BadgeMedal
 import com.miqu.thinktwice.ui.components.rememberArt
 import com.miqu.thinktwice.ui.navigation.BottomBarClearance
 import com.miqu.thinktwice.ui.theme.AppTheme
@@ -231,15 +231,13 @@ private fun LevelCard(xp: Int) {
     }
 }
 
-private val grayscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
-
 @Composable
 private fun BadgeImage(badge: Badge, modifier: Modifier = Modifier) {
-    Image(
-        rememberArt(badgeArt(badge.spec.id)),
+    BadgeMedal(
+        id = badge.spec.id,
+        unlocked = badge.unlocked,
         contentDescription = stringResource(if (badge.unlocked) R.string.badge_unlocked_cd else R.string.badge_locked_cd, badgeTitle(badge.spec)),
-        colorFilter = if (badge.unlocked) null else grayscale,
-        modifier = modifier.aspectRatio(1f).alpha(if (badge.unlocked) 1f else 0.45f),
+        modifier = modifier,
     )
 }
 

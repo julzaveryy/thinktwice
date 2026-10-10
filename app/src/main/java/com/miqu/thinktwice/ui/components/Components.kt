@@ -1,5 +1,12 @@
 package com.miqu.thinktwice.ui.components
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
+import com.miqu.thinktwice.ui.theme.Tint
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.Canvas
 import com.miqu.thinktwice.ui.theme.tintFor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.LaunchedEffect
@@ -439,19 +446,81 @@ fun TopicIcon(categoryId: String, modifier: Modifier = Modifier) {
 }
 
 @DrawableRes
-fun badgeArt(id: String): Int = when (id) {
-    "first_step" -> R.drawable.badge_first_step
-    "curious_mind" -> R.drawable.badge_curious_mind
-    "on_fire" -> R.drawable.badge_on_fire
-    "explorer" -> R.drawable.badge_explorer
-    "quiz_regular" -> R.drawable.badge_quiz_regular
-    "sharp_shooter" -> R.drawable.badge_sharp_shooter
-    "perfect_round" -> R.drawable.badge_perfect_round
-    "century_club" -> R.drawable.badge_century_club
-    "super_star" -> R.drawable.badge_super_star
-    "xp_collector" -> R.drawable.badge_xp_collector
-    "quiz_champion" -> R.drawable.badge_quiz_champion
-    else -> R.drawable.badge_master_mind
+fun badgeGlyph(id: String): Int = when (id) {
+    "first_step" -> R.drawable.ic_badge_first_step
+    "curious_mind" -> R.drawable.ic_badge_curious_mind
+    "on_fire" -> R.drawable.ic_badge_on_fire
+    "explorer" -> R.drawable.ic_badge_explorer
+    "quiz_regular" -> R.drawable.ic_badge_quiz_regular
+    "sharp_shooter" -> R.drawable.ic_badge_sharp_shooter
+    "perfect_round" -> R.drawable.ic_badge_perfect_round
+    "century_club" -> R.drawable.ic_badge_century_club
+    "super_star" -> R.drawable.ic_badge_super_star
+    "xp_collector" -> R.drawable.ic_badge_xp_collector
+    "quiz_champion" -> R.drawable.ic_badge_quiz_champion
+    else -> R.drawable.ic_badge_master_mind
+}
+
+fun badgeTint(id: String): Tint = when (id) {
+    "first_step" -> Tint.MINT
+    "curious_mind" -> Tint.LILAC
+    "on_fire" -> Tint.PEACH
+    "explorer" -> Tint.SKY
+    "quiz_regular" -> Tint.SKY
+    "sharp_shooter" -> Tint.ROSE
+    "perfect_round" -> Tint.BUTTER
+    "century_club" -> Tint.LILAC
+    "super_star" -> Tint.BUTTER
+    "xp_collector" -> Tint.PEACH
+    "quiz_champion" -> Tint.BUTTER
+    else -> Tint.MINT
+}
+
+/**
+ * A badge medal: coloured disc with a thin ring and the badge's glyph. Locked badges are grey
+ * with a dashed ring and a small padlock.
+ */
+@Composable
+fun BadgeMedal(id: String, unlocked: Boolean, contentDescription: String?, modifier: Modifier = Modifier) {
+    val tint = badgeTint(id)
+    val scheme = MaterialTheme.colorScheme
+    val dark = AppTheme.extra.isDark
+    val disc = if (unlocked) tint.container() else scheme.surfaceVariant
+    val ink = if (unlocked) tint.content() else if (dark) Color(0xFF5B6474) else Color(0xFFA3ACBE)
+    BoxWithConstraints(
+        modifier
+            .aspectRatio(1f)
+            .semantics { if (contentDescription != null) this.contentDescription = contentDescription },
+        contentAlignment = Alignment.Center,
+    ) {
+        val size = maxWidth
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = size.toPx() * 0.031f
+            val r = this.size.minDimension / 2f - stroke
+            drawCircle(disc, radius = r)
+            drawCircle(
+                color = ink.copy(alpha = if (unlocked) 0.35f else 0.5f),
+                radius = r,
+                style = Stroke(
+                    width = stroke,
+                    pathEffect = if (unlocked) null else PathEffect.dashPathEffect(floatArrayOf(stroke * 1.6f, stroke * 2f)),
+                ),
+            )
+        }
+        Icon(painterResource(badgeGlyph(id)), contentDescription = null, tint = ink, modifier = Modifier.size(size * 0.52f))
+        if (!unlocked) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(size * 0.3f)
+                    .clip(CircleShape)
+                    .background(scheme.surface),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Rounded.Lock, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(size * 0.17f))
+            }
+        }
+    }
 }
 
 @Composable
