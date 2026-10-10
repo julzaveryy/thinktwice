@@ -141,7 +141,7 @@
     <string name="pick_answer">Pilih jawaban</string>
     <string name="leave_title">Keluar dari kuis?</string>
     <string name="leave_open">Akhiri sekarang untuk menyimpan skormu, atau keluar tanpa menyimpan.</string>
-    <string name="leave_round">Kamu bisa kembali kapan saja, tapi jawaban di ronde ini tidak akan disimpan.</string>
+    <string name="leave_round">Jawaban di ronde ini tidak akan disimpan.</string>
     <string name="end_save">Akhiri dan simpan skor</string>
     <string name="leave">Keluar tanpa menyimpan</string>
     <string name="keep_playing">Lanjut main</string>

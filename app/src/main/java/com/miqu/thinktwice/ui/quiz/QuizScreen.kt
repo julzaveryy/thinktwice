@@ -1,5 +1,7 @@
 package com.miqu.thinktwice.ui.quiz
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.automirrored.rounded.ExitToApp
@@ -254,8 +256,8 @@ fun QuizScreen(onClose: () -> Unit, onFinished: (Long) -> Unit) {
 }
 
 /**
- * Leave confirmation drawn inside the quiz screen (not a separate dialog window), so it
- * follows the app language and slides up as a sheet with the app's motion.
+ * Leave confirmation: a card floating in the middle of the screen. Drawn inside the quiz
+ * screen (not a separate dialog window) so it follows the app language and the app's motion.
  */
 @Composable
 private fun LeaveSheet(
@@ -282,30 +284,28 @@ private fun LeaveSheet(
         }
         AnimatedVisibility(
             visible = visible,
-            modifier = Modifier.align(Alignment.BottomCenter),
-            enter = slideInVertically(Motion.spatial()) { it } + fadeIn(tween(120)),
-            exit = slideOutVertically(Motion.spatial()) { it } + fadeOut(tween(160, delayMillis = 60)),
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 24.dp),
+            // Pops out from the middle with a slight spring, shrinks back when dismissed.
+            enter = scaleIn(Motion.bouncy(), initialScale = 0.88f) + fadeIn(tween(140)),
+            exit = scaleOut(Motion.effects(), targetScale = 0.94f) + fadeOut(tween(120)),
         ) {
             Surface(
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 24.dp,
+                modifier = Modifier.fillMaxWidth().widthIn(max = 420.dp),
             ) {
                 Column(
-                    Modifier
-                        .navigationBarsPadding()
-                        .padding(start = ScreenGutter, end = ScreenGutter, top = 12.dp, bottom = 20.dp),
+                    Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Box(Modifier.size(width = 40.dp, height = 4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.outlineVariant))
-                    Spacer(Modifier.height(22.dp))
                     Box(
                         Modifier.size(64.dp).clip(CircleShape).background(extra.amberContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(Icons.AutoMirrored.Rounded.ExitToApp, null, tint = extra.onAmberContainer, modifier = Modifier.size(30.dp))
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(14.dp))
                     Text(
                         stringResource(R.string.leave_title),
                         style = MaterialTheme.typography.headlineSmall,
